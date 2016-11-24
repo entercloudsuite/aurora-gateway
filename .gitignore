@@ -1,3 +1,7 @@
+# Project specific paths
+dev.env
+build
+
 # Logs
 logs
 *.log
