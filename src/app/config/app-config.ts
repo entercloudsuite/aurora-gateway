@@ -46,12 +46,12 @@ export class AppConfig {
   }
 
   private getFloatEnvVar(variableName: string, defaultValue: number = null): number {
-    const value = this.getEnvVar(variableName, defultValue);
+    const value = this.getEnvVar(variableName, defaultValue);
 
     const errorMessage =
         `Environment Variable ${variableName} does not contain a valid float`;
 
-    return StringUtils.parseInt(value, errorMessage);
+    return StringUtils.parseFloat(value, errorMessage);
 
   }
 

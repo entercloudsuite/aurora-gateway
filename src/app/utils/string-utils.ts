@@ -33,11 +33,11 @@ export class StringUtils {
 
   static parseFloat(value: string, errorMessage ?: string): number {
     if (!StringUtils.isValidFloat(value)) {
-      const message = errorMessage || `${value} is not a valid int!`;
+      const message = errorMessage || `${value} is not a valid float!`;
       throw new Error(message);
     }
 
-    return parseFloat(value, 10);
+    return parseFloat(value);
   }
 
   private static convertStringToBoolean(value: string) {
