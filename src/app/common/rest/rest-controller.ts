@@ -7,11 +7,18 @@ import { BusinessViolationError, MethodNotAllowedError, ResourceNotFoundError,
 export class RestController {
   constructor() {}
 
-  respond(res: Response, item: any | Array<any>, statusCode: number = 200): Response {
-    const response = new RestResponse(item);
-    return res.status(statusCode).json(response);
+  respond(res: Response, item: any | Array<any>, statusCode: number = 200, forwardedResponse: boolean = false): Response {
+    if (forwardedResponse) {
+      return res.status(statusCode).json(item);
+    } else {
+      return res.status(statusCode).json(new RestResponse(item));
+    }
+
   }
 
+  forwardResponse(res: Response, statusCode: number = 200, data: any) {
+    return res.status(statusCode).json(data);
+  }
   respondNoContent(res: Response, statusCode: number = 204): Response {
     return res.status(statusCode).json();
   }

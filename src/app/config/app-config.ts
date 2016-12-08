@@ -5,8 +5,8 @@ export class AppConfig {
   port: number;
   logLevel: string; // 'debug' | 'verbose' | 'info' | 'warn' | 'error';
   serveStatic: boolean;
-  openstack_url: string;
-  openstack_api_version: number;
+  openstack_auth_url: string;
+  openstack_api_version: string;
   // optional environment variables
   enableHttpRequestLogging: boolean;
 
@@ -15,8 +15,8 @@ export class AppConfig {
     this.port = this.getIntegerEnvVar('PORT');
     this.logLevel = this.getStringEnvVar('LOG_LEVEL');
     this.serveStatic = this.getBooleanEnvVar('SERVE_STATIC');
-    this.openstack_url = this.getStringEnvVar('OPENSTACK_URL')
-    this.openstack_api_version = this.getFloatEnvVar('OPENSTACK_API_VERSION')
+    this.openstack_auth_url = this.getStringEnvVar('OPENSTACK_URL')
+    this.openstack_api_version = this.getStringEnvVar('OPENSTACK_API_VERSION')
     // optional environment variables
     this.enableHttpRequestLogging = this.getBooleanEnvVar('ENABLE_HTTP_REQUEST_LOGGING', false);
   }
