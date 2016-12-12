@@ -13,12 +13,12 @@ export class RestController {
     } else {
       return res.status(statusCode).json(new RestResponse(item));
     }
-
   }
 
-  forwardResponse(res: Response, statusCode: number = 200, data: any) {
+  forwardResponse(res: Response, statusCode: number = 200, data: any): Response {
     return res.status(statusCode).json(data);
   }
+
   respondNoContent(res: Response, statusCode: number = 204): Response {
     return res.status(statusCode).json();
   }

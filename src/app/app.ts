@@ -7,7 +7,7 @@ import { OpenstackService } from './openstack';
 import { ExpressAppFactory } from './express-app-factory';
 import { ApiRouterFactory } from './api';
 import { RestErrorMiddleware } from './common';
-
+import util = require('util');
 const LOGGER: Logger = LoggerFactory.getLogger();
 
 const appConfig: AppConfig = new AppConfig(process.env);

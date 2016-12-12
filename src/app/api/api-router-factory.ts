@@ -1,8 +1,8 @@
 import express = require('express');
 import { Router } from 'express';
-import { KeystoneRouter } from './routes/keystone/keystone-router';
+import { IdentityRouter } from './routes/identity/identity-router';
 import { Logger, LoggerFactory, InvalidResourceUrlError, RestController } from '../common';
-import { OpenstackService } from '../openstack';
+import { OpenstackService, IdentityService } from '../openstack';
 
 export class ApiRouterFactory {
 
@@ -11,25 +11,18 @@ export class ApiRouterFactory {
   private constructor() {}
 
   static getApiRouter(openstackService: OpenstackService): Router {
-    const router: Router = express.Router();
+    const apiRouter: Router = express.Router({ mergeParams: true });
+    const identityService = new IdentityService(openstackService.authUrl);
     const restController: RestController = new RestController();
-    const keystoneRouter: Router = new KeystoneRouter().router;
+    const identityRouter: Router = new IdentityRouter(identityService, openstackService).router;
 
-    ApiRouterFactory.LOGGER.info('Mounting keystone route');
-    router.use('/keystone', keystoneRouter);
+    ApiRouterFactory.LOGGER.info('Mounting routes');
+    apiRouter.use('/identity', identityRouter);
 
-    router.get('/', (req, res, next) => {
-      OpenstackService.sendRequest({'uri': openstackService.authUrl})
-          .then((result) => {
-            restController.respond(res, result[1], result[0].statusCode, true);
-          })
-          .catch((error) => { next(error); });
-    });
-
-    router.all('*', (req, res, next) => {
+    apiRouter.all('*', (req, res, next) => {
       next(new InvalidResourceUrlError());
     });
 
-    return router;
+    return apiRouter;
   }
 }

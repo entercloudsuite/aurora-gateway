@@ -6,7 +6,7 @@ export abstract class RestRouter {
   router: Router;
 
   constructor() {
-    this.router = express.Router();
+    this.router = express.Router({mergeParams: true});
   }
 
   abstract initRoutes();

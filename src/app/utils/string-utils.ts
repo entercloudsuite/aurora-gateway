@@ -9,7 +9,7 @@ export class StringUtils {
   }
 
   static isValidFloat(value: string): boolean {
-    const parsedFloat = parseFloat(value, 10);
+    const parsedFloat = parseFloat(value);
     return !isNaN(parsedFloat);
   }
 
