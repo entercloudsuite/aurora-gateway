@@ -1,6 +1,6 @@
-import { RestError } from './rest-error';
+import { ApiError } from './api-error';
 
-export class InvalidJsonError extends RestError {
+export class InvalidJsonError extends ApiError {
 
   constructor(
     public message: string = 'Request does not contain valid JSON data.'

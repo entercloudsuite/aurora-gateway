@@ -1,5 +1,5 @@
 import request = require('request');
-import { Logger, LoggerFactory, InternalError, RestError, InvalidJsonError } from '../common';
+import { Logger, LoggerFactory, InternalError, ApiError, InvalidJsonError } from '../common';
 import util = require('util');
 
 export class OpenstackService {
@@ -19,12 +19,12 @@ export class OpenstackService {
         OpenstackService.LOGGER.info(`Keystone URL - ${this.authUrl}`);
         OpenstackService.sendRequest({'uri': this.authUrl})
             .then((result) => {
-                if (result[0].statusCode !== 200) {
+                if (result.statusCode !== 200) {
                     OpenstackService.LOGGER.error('Unable to reach Openstack API on specified endpoint');
-                    throw new RestError('Error while testing Openstack API connection', result[0].statusCode, "OPENSTACK_API_ERROR")
+                    throw new ApiError('Error while testing Openstack API connection', result.statusCode, "OPENSTACK_API_ERROR")
                 }
                 OpenstackService.LOGGER.info('Validated API connection - Response body:');
-                OpenstackService.LOGGER.debug(JSON.stringify(result[1], null, 2));
+                OpenstackService.LOGGER.debug(result.body);
             })
             .catch((error) => {
                 OpenstackService.LOGGER.error('Error while testing OpenStack API');
@@ -36,7 +36,7 @@ export class OpenstackService {
         let requestOptions = {
             'method':  options['method'] || 'GET',
             'uri': options['uri'],
-            'json': options['json'] || false,
+            'json': options['json'] || true,
             'headers': options['headers'] || {'content-type': 'application/json'}
         };
 
@@ -44,23 +44,26 @@ export class OpenstackService {
              requestOptions['body'] = options['body'];
          }
 
-        OpenstackService.LOGGER.debug(`Calling Openstack API with ${util.inspect(requestOptions, false, null)}`);
+        OpenstackService.LOGGER.debug(`Calling OpenStack API with ${JSON.stringify(requestOptions)}`);
         return new Promise((resolve, reject) => {
             request(requestOptions, (err, response, body) => {
                 if (err) {
                     return reject(new InternalError(err));
                 }
-                OpenstackService.LOGGER.debug(`Response body ${JSON.stringify(response.body)}`);
-                // TODO: Return only the response and refacture previous uses of the method
-                return resolve([response, body]);
+                OpenstackService.LOGGER.debug(`OpenStack API Response - ${response.body}`);
+                if (body['error']) {
+                    return reject(new ApiError(body.error.message, body.error.code, body.error.title));
+                } else {
+                    return resolve(response);
+                }
             });
         });
     };
 
-    parseCredentials(credentials: {}): Promise<any> {
-        OpenstackService.LOGGER.debug(`Parsing credentials - ${JSON.stringify(credentials)}`);
+    static parseCredentials(credentials: {}, apiVersion: string): Promise<any> {
+            OpenstackService.LOGGER.debug(`Parsing credentials - ${JSON.stringify(credentials)}`);
         return new Promise((resolve, reject) => {
-            switch (this.apiVersion) {
+            switch (apiVersion) {
                 case '2.0':
                     if (credentials['username'] && credentials['password']) {
                         return resolve({
@@ -76,7 +79,7 @@ export class OpenstackService {
                     } else return reject(new InvalidJsonError());
                 default:
                     // TODO: Handle exceptions
-                    return resovle(credentials);
+                    return resolve(credentials);
             }
         });
     }

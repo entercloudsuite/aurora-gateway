@@ -1,20 +1,19 @@
 import express = require('express');
 import { Router } from 'express';
 import { IdentityRouter } from './routes/identity/identity-router';
-import { Logger, LoggerFactory, InvalidResourceUrlError, RestController } from '../common';
+import { Logger, LoggerFactory, InvalidResourceUrlError } from '../common';
 import { OpenstackService, IdentityService } from '../openstack';
 
 export class ApiRouterFactory {
 
-  private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+  private static LOGGER: Logger = LoggerFactory.getLogger();
 
   private constructor() {}
 
   static getApiRouter(openstackService: OpenstackService): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
-    const identityService = new IdentityService(openstackService.authUrl);
-    const restController: RestController = new RestController();
-    const identityRouter: Router = new IdentityRouter(identityService, openstackService).router;
+    const identityService = new IdentityService(openstackService.authUrl, openstackService.apiVersion);
+    const identityRouter: Router = new IdentityRouter(identityService).router;
 
     ApiRouterFactory.LOGGER.info('Mounting routes');
     apiRouter.use('/identity', identityRouter);

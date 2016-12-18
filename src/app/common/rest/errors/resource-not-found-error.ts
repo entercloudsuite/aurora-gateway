@@ -1,6 +1,6 @@
-import { RestError } from './rest-error';
+import { ApiError } from './api-error';
 
-export class ResourceNotFoundError extends RestError {
+export class ResourceNotFoundError extends ApiError {
 
   constructor(
     public message: string = 'The resource could not be found.'

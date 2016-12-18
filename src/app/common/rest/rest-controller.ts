@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import { RestResponse } from './rest-response';
-import { Validatable, Validator, ValidatorError } from '../validation';
-import { BusinessViolationError, MethodNotAllowedError, ResourceNotFoundError,
-  ValidationFailureError, ValidationFailureFactory } from './errors';
+import { MethodNotAllowedError, ResourceNotFoundError } from './errors';
 
 export class RestController {
   constructor() {}
@@ -15,22 +13,12 @@ export class RestController {
     }
   }
 
-  forwardResponse(res: Response, statusCode: number = 200, data: any): Response {
+  forwardResponse(res: Response,  data: any, statusCode: number = 200): Response {
     return res.status(statusCode).json(data);
   }
-
+  
   respondNoContent(res: Response, statusCode: number = 204): Response {
     return res.status(statusCode).json();
-  }
-
-  validateModel(model: Validatable): void {
-    const validatorErrors: Array<ValidatorError> = model.validate();
-    this.throwValidatorErrors(validatorErrors);
-  }
-
-  validateData(data: any, constraints: any): void {
-    const validatorErrors: Array<ValidatorError> = Validator.validate(data, constraints);
-    this.throwValidatorErrors(validatorErrors);
   }
 
   validateResourceFound(item: any) {
@@ -41,23 +29,5 @@ export class RestController {
 
   throwMethodNotAllowedError(req, res, next) {
     throw new MethodNotAllowedError();
-  }
-
-  throwBusinessViolation(businessViolationCode: string, message?: string) {
-    throw new BusinessViolationError(businessViolationCode, message);
-  }
-
-  ////////////////////
-
-  private throwValidatorErrors(validatorErrors: Array<ValidatorError>): void {
-    if (validatorErrors == null) {
-      return;
-    }
-
-    const failures = validatorErrors.map((error: ValidatorError) => {
-      return ValidationFailureFactory.fromValidatorError(error);
-    });
-
-    throw new ValidationFailureError(failures);
   }
 }

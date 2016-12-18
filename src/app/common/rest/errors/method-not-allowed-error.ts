@@ -1,6 +1,6 @@
-import { RestError } from './rest-error';
+import { ApiError } from './api-error';
 
-export class MethodNotAllowedError extends RestError {
+export class MethodNotAllowedError extends ApiError {
 
   constructor(
     public message: string = 'The endpoint does not support this HTTP method.'

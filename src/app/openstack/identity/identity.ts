@@ -3,59 +3,97 @@ import { Logger, LoggerFactory, InvalidJsonError } from '../../common';
 
 export class IdentityService {
     private authUrl: string;
-
-    constructor(keystoneURL: string) {
+    private apiVersion: string;
+    
+    constructor(keystoneURL: string, apiVersion: string) {
         this.authUrl = keystoneURL;
+        this.apiVersion = apiVersion;
     }
 
-    private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+    private static  LOGGER: Logger = LoggerFactory.getLogger();
     // TODO: Specify proper type for credentials
-    authenticate(credentials: any, openstackService: OpenstackService): Promise<any> {
+    authenticate(credentials: any): Promise<any> {
         let result = {};
-        return openstackService.parseCredentials(credentials)
-            .then((credentials) => {
-                return this.getToken(credentials);
+        return OpenstackService.parseCredentials(credentials, this.apiVersion)
+            .then((authObj) => {
+                return this.getToken(authObj);
             })
             .then((response) => {
-                if (response[0]['error']) {
-                    // TODO: Treat incoming Openstack API errors differently
-                    return Promise.reject((new InvalidJsonError(response[0]['error']['message'])));
-                } else if (response[1].access.serviceCatalog.length === 0) {
-                    result = response[1].access;
-                    return this.listTenants(response[1].access.token.id);
+                if (response.body.access.serviceCatalog.length === 0) {
+                    result = response.body;
+                    return this.listTenants(response.body.access.token.id);
+                } else {
+                    return Promise.resolve(response.body);
+                }
+            })
+            .then((response) => {
+                if (result) {
+                    let reqObject = response.body;
+                    reqObject['credentials'] = credentials;
+                    return this.getServiceCatalog(reqObject);
+                } else return Promise.resolve(response);
+            })
+            .then((response) => {
+                if (result) {
+                    return this.parseArray(response);
                 } else {
                     return Promise.resolve(response);
                 }
             })
             .then((response) => {
-                if (result) {
-                    result['tenant'] = response[1];
-                    return Promise.resolve(result);
-                } else return Promise.resolve(result);
+                return Promise.resolve(response);
             })
             .catch((error) => {
-                // TODO: Create and specify proper type of error
                 return Promise.reject(error);
             });
     }
 
+    parseArray(responseArray: Array<{}>): Promise<any> {
+        return new Promise((resolve) => {
+           let responseObject = {};
+           responseArray.forEach((element) => {
+               responseObject[Object.keys(element)[0]] = element[Object.keys(element)[0]];
+           });
+           resolve(responseObject);
+        });
+    }
     getToken(credentials: {}): Promise<any> {
         // TODO: Abstract endpoint for different API versions
         IdentityService.LOGGER.debug('Requesting token from Keystone');
         return OpenstackService.sendRequest({
             'method': 'POST',
             'uri': this.authUrl + '/tokens',
-            'json': true,
             'body': credentials
         });
+    }
+
+    getServiceCatalog(authObj: {}): Promise<any> {
+        let userCredentials = {
+            'username': authObj['credentials']['username'],
+            'password': authObj['credentials']['password']
+        };
+
+        return Promise.all(authObj['tenants'].map((tenant) => {
+            IdentityService.LOGGER.debug(`Requesting Service Catalog for ${tenant.name}`);
+            userCredentials['tenant'] = tenant.name;
+            return OpenstackService.parseCredentials(userCredentials, this.apiVersion)
+                .then((authBody) => {
+                    return this.getToken(authBody);
+                })
+                .then((authResult) => {
+                    let tenant = authResult.body['access']['token']['tenant']['name'];
+                    let result = {};
+                    result[tenant] = authResult.body;
+                    return Promise.resolve(result);
+                });
+        }));
     }
 
     listTenants(apiToken: string): Promise<any> {
         IdentityService.LOGGER.debug(`Getting tenant list for ${apiToken}`);
         return OpenstackService.sendRequest({
            'uri': this.authUrl + '/tenants',
-            'headers': { 'X-Auth-Token': apiToken },
-            'json': true
+            'headers': { 'X-Auth-Token': apiToken }
         });
     }
 
@@ -65,7 +103,6 @@ export class IdentityService {
             'uri': this.authUrl + '/extensions'
         });
     }
-    
     listVersions(): Promise<any> {
         IdentityService.LOGGER.debug('Listing OpenStack API versions');
         return OpenstackService.sendRequest({'uri': this.authUrl});

@@ -1,6 +1,6 @@
-import { RestError } from './rest-error';
+import { ApiError } from './api-error';
 
-export class InvalidResourceUrlError extends RestError {
+export class InvalidResourceUrlError extends ApiError {
 
   constructor(
     public message: string = 'Not a valid resource url.'

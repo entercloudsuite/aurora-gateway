@@ -1,4 +1,4 @@
-export class RestError extends Error {
+export class ApiError extends Error {
 
   constructor(public message: string, public httpStatusCode: number, public code: string) {
     super(message);
@@ -8,8 +8,9 @@ export class RestError extends Error {
 
   toJSON() {
     return {
-      code: this.code,
-      message: this.message
+      code: this.httpStatusCode,
+      message: this.message,
+      title: this.code
     };
   }
 

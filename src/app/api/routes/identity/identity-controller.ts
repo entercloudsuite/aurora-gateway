@@ -1,8 +1,8 @@
 import { Logger, LoggerFactory, RestController } from '../../../common';
-import { IdentityService, OpenstackService } from '../../../openstack';
+import { IdentityService } from '../../../openstack';
 
 export class IdentityController extends RestController {
-  constructor(private identityService: IdentityService, private openstackService: OpenstackService) {
+  constructor(private identityService: IdentityService) {
     super();
   }
 
@@ -12,21 +12,16 @@ export class IdentityController extends RestController {
         IdentityController.LOGGER.debug('Listing Openstack API Versions');
         return this.identityService.listVersions()
             .then((result) => {
-                return this.respond(res, result);
-            })
-            .catch((error) => { next(error); });
+                return this.forwardResponse(res, result.body, result.statusCode);
+            });
     }
 
   authenticate(req, res, next): Promise<any> {
     // TODO : Log username
     IdentityController.LOGGER.debug(`Authenticating user ${req.body['username']}`);
-
-    return this.identityService.authenticate(req.body, this.openstackService)
+    return this.identityService.authenticate(req.body)
         .then((result) => {
-          return this.respond(res, result);
-        })
-        .catch((error) => {
-            next(error);
+            return this.forwardResponse(res, result);
         });
   };
 
@@ -35,16 +30,16 @@ export class IdentityController extends RestController {
 
     return this.identityService.listExtensions()
         .then((result) => {
-          return this.respond(res, JSON.stringify(result));
+          return this.forwardResponse(res, result.body, result.statusCode);
         });
   };
 
   listTenants(req, res, next): Promise<any> {
     IdentityController.LOGGER.debug('Listing tenants');
 
-    return this.identityService.listTenants(req.headers['X-Auth-Token'])
+    return this.identityService.listTenants(req.headers['x-auth-token'])
         .then((result) => {
-          return this.respond(res, JSON.stringify(result));
+          return this.forwardResponse(res, result.body, result.statusCode);
         });
   };
 }

@@ -1,6 +1,6 @@
-import { RestError } from './rest-error';
+import { ApiError } from './api-error';
 
-export class InternalError extends RestError {
+export class InternalError extends ApiError {
 
   constructor(
     public originalError: Error,
