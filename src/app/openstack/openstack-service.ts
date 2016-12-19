@@ -10,11 +10,12 @@ export class OpenstackService {
 
   private static readonly LOGGER: Logger = LoggerFactory.getLogger();
 
-  constructor(options:{}) {
+  constructor(options: {}) {
     OpenstackService.LOGGER.info('Instatiating OpenstackService');
     this.authUrl = options['uri'];
     this.apiVersion = options['version'];
-
+    this.serviceCatalog = {};
+    
     OpenstackService.LOGGER.info(`OpenStack API Version - ${this.apiVersion}`);
     OpenstackService.LOGGER.info(`Keystone URL - ${this.authUrl}`);
     OpenstackService.sendRequest({'uri': this.authUrl})
@@ -30,6 +31,23 @@ export class OpenstackService {
         OpenstackService.LOGGER.error('Error while testing OpenStack API');
         throw new InternalError(error);
       });
+  }
+
+  updateServiceCatalog(newServiceCatalog: Array<{}>) {
+    newServiceCatalog.forEach((item) => {
+      item['endpoints'].forEach((endpoint) => {
+        if (!(endpoint['id'] in this.serviceCatalog)) {
+          this.serviceCatalog[endpoint['id']] = {
+            'adminURL': endpoint['adminURL'],
+            'region': endpoint['region'],
+            'internalURL': endpoint['internalURL'],
+            'publicURL': endpoint['publicURL'],
+            'type': item['type'],
+            'name': item['name']
+          };
+        }
+      });
+    });
   }
 
   static  sendRequest(options: {}): Promise<any> {

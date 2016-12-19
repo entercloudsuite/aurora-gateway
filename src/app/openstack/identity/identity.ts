@@ -1,5 +1,6 @@
 import {OpenstackService} from '../openstack-service';
 import {Logger, LoggerFactory, NotImplementedError } from '../../common';
+import {InternalError} from "../../../../build/app/common/rest/errors/internal-error";
 
 export class IdentityService {
   private authUrl: string;
@@ -43,6 +44,20 @@ export class IdentityService {
       .catch((error) => {
         return Promise.reject(error);
       });
+  }
+
+  destroySession(currentSession: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      currentSession.destroy((error) => {
+        if (error) {
+          return reject(new InternalError(error));
+        } else {
+          return resolve({
+            'status': 'Successfully logged out'
+          });
+        }
+      });
+    });
   }
 
   getToken(credentials: {}): Promise<any> {

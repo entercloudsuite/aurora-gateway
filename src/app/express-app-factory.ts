@@ -24,9 +24,8 @@ export class ExpressAppFactory {
     app.use(bodyParser.json());
     app.use(expressSession({
       secret: appConfig.sessionSecret,
-      resave: true,
-      saveUninitialized: true,
-      cookie: { secure: true }
+      resave: false,
+      saveUninitialized: true
     }));
     
     if (appConfig.serveStatic) {

@@ -1,8 +1,9 @@
 import {Logger, LoggerFactory, RestController} from '../../../common';
-import {IdentityService} from '../../../openstack';
+import {IdentityService, OpenstackService} from '../../../openstack';
+import request = require('request');
 
 export class IdentityController extends RestController {
-  constructor(private identityService: IdentityService) {
+  constructor(private identityService: IdentityService, private openstackService: OpenstackService) {
     super();
   }
 
@@ -22,6 +23,8 @@ export class IdentityController extends RestController {
     return this.identityService.authenticate(req.body)
       .then((result) => {
         req.session.token = result.body.access.token.id;
+        req.session.username = req.body['username'];
+        this.openstackService.updateServiceCatalog(result.body.access.serviceCatalog);
         return this.forwardResponse(res, result.body, result.statusCode);
       });
   };
@@ -35,10 +38,18 @@ export class IdentityController extends RestController {
       });
   };
 
+  logout(req, res, next): Promise<any> {
+    IdentityController.LOGGER.debug(`Log out for use - ${req.session.username}`);
+
+    return this.identityService.destroySession(req.session)
+      .then((result) => {
+        return this.respond(res, result);
+      });
+  }
   listTenants(req, res, next): Promise<any> {
     IdentityController.LOGGER.debug('Listing tenants');
 
-    return this.identityService.listTenants(req.headers['x-auth-token'])
+    return this.identityService.listTenants(req.session.token)
       .then((result) => {
         return this.forwardResponse(res, result.body, result.statusCode);
       });
