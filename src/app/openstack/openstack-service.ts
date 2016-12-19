@@ -50,7 +50,7 @@ export class OpenstackService {
                 if (err) {
                     return reject(new InternalError(err));
                 }
-                OpenstackService.LOGGER.debug(`OpenStack API Response - ${response.body}`);
+                OpenstackService.LOGGER.debug(`OpenStack API Response - ${JSON.stringify(response.body)}`);
                 if (body['error']) {
                     return reject(new ApiError(body.error.message, body.error.code, body.error.title));
                 } else {

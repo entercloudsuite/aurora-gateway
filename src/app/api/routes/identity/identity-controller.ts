@@ -21,6 +21,7 @@ export class IdentityController extends RestController {
     IdentityController.LOGGER.debug(`Authenticating user ${req.body['username']}`);
     return this.identityService.authenticate(req.body)
         .then((result) => {
+            req.session.token = result[Object.keys(result)[0]]['access']['token']['id'];
             return this.forwardResponse(res, result);
         });
   };

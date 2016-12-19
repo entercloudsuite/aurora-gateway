@@ -4,6 +4,7 @@ import express = require('express');
 import bodyParser = require('body-parser');
 import morgan = require('morgan');
 import { Logger, LoggerFactory } from './common';
+import expressSession = require('express-session');
 
 export class ExpressAppFactory {
 
@@ -21,7 +22,13 @@ export class ExpressAppFactory {
 
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
-
+    app.use(expressSession({
+      secret: appConfig.sessionSecret,
+      resave: true,
+      saveUninitialized: true,
+      cookie: { secure: true }
+    }));
+    
     if (appConfig.serveStatic) {
       ExpressAppFactory.LOGGER.info(`Serving static files from public`);
       app.use(express.static('public'));
