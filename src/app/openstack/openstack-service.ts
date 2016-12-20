@@ -15,7 +15,7 @@ export class OpenstackService {
     this.authUrl = options['uri'];
     this.apiVersion = options['version'];
     this.serviceCatalog = {};
-    
+
     OpenstackService.LOGGER.info(`OpenStack API Version - ${this.apiVersion}`);
     OpenstackService.LOGGER.info(`Keystone URL - ${this.authUrl}`);
     OpenstackService.sendRequest({'uri': this.authUrl})
@@ -47,6 +47,16 @@ export class OpenstackService {
           };
         }
       });
+    });
+  }
+
+  proxyRequest(initialRequest: any): Promise<any> {
+    initialRequest.headers['x-auth-token'] = initialRequest.session.token;
+    return OpenstackService.sendRequest({
+      'method': initialRequest.method,
+      'uri': this.serviceCatalog[initialRequest.headers['endpoint-id']].publicURL + initialRequest.url,
+      'headers': initialRequest.headers,
+      'body': initialRequest.body
     });
   }
 

@@ -1,10 +1,10 @@
-import {RestRouter} from '../../../common';
-import {IdentityController} from './identity-controller';
-import {IdentityService, OpenstackService} from '../../../openstack';
+import { RestRouter } from '../../../common';
+import { IdentityController } from './identity-controller';
+import { IdentityService, OpenstackService } from '../../../openstack';
 
 export class IdentityRouter extends RestRouter {
   identityController: IdentityController;
-  
+
   constructor(identityService: IdentityService, openstackService: OpenstackService) {
     super();
     this.identityController = new IdentityController(identityService, openstackService);

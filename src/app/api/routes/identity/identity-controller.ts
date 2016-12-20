@@ -1,6 +1,5 @@
 import {Logger, LoggerFactory, RestController} from '../../../common';
 import {IdentityService, OpenstackService} from '../../../openstack';
-import request = require('request');
 
 export class IdentityController extends RestController {
   constructor(private identityService: IdentityService, private openstackService: OpenstackService) {
