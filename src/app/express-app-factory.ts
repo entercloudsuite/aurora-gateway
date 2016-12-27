@@ -5,6 +5,7 @@ import bodyParser = require('body-parser');
 import morgan = require('morgan');
 import { Logger, LoggerFactory } from './common';
 import expressSession = require('express-session');
+import cors = require('cors');
 
 export class ExpressAppFactory {
 
@@ -27,6 +28,7 @@ export class ExpressAppFactory {
       resave: false,
       saveUninitialized: true
     }));
+    app.use(cors());
     
     if (appConfig.serveStatic) {
       ExpressAppFactory.LOGGER.info(`Serving static files from public`);

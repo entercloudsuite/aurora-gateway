@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "request": "registry:npm/request#2.69.0+20160428223725"
-  },
-  "globalDependencies": {
-    "express-session": "registry:dt/express-session#0.0.0+20161119044246"
-  }
-}
