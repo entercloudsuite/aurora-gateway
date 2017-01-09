@@ -29,7 +29,7 @@ export class ApiRouterFactory {
     apiRouter.use('/cinder', cinderRouter);
     apiRouter.use('/neutron', neutronRouter);
     apiRouter.use('/glance', glanceRouter);
-
+    
     apiRouter.all('*', (req, res, next) => {
       next(new InvalidResourceUrlError());
     });

@@ -25,7 +25,8 @@ export class ExpressAppFactory {
     app.use(bodyParser.json());
     app.use(expressSession({
       secret: appConfig.sessionSecret,
-      resave: false,
+      maxAge: new Date(Date.now() + 3600000),
+      expires: new Date(Date.now() + 3600000),
       saveUninitialized: true
     }));
     app.use(cors());
@@ -37,7 +38,8 @@ export class ExpressAppFactory {
 
     if (appConfig.enableHttpRequestLogging) {
       ExpressAppFactory.LOGGER.info(`Request logging is enabled`);
-      app.use(morgan('combined'));
+      app.use(morgan(':remote-addr :user-agent :method :url :status :response-time ms - :res[content-length]',
+        {'stream': ExpressAppFactory.LOGGER.stream}) );
     }
 
     if (preApiRouterMiddlewareFns != null) {

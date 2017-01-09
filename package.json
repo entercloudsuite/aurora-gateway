@@ -44,7 +44,9 @@
     "request": "^2.79.0",
     "serialize-error": "2.0.0",
     "validate.js": "0.10.0",
-    "winston": "2.2.0"
+    "winston": "2.2.0",
+    "winston-daily-rotate-file": "^1.4.2",
+    "winston-logstash": "^0.3.0"
   },
   "devDependencies": {
     "@types/body-parser": "0.0.33",
