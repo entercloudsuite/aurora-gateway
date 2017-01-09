@@ -24,7 +24,8 @@ export class LoggerFactory {
         
         if (!LoggerFactory.logger) {
             const logLevel = process.env['LOG_LEVEL'];
-
+            const logstashHost = process.env['LOGSTASH_HOST'];
+            const logstashPort = process.env['LOGSTASH_PORT'];
             LoggerFactory.logger = new winston.Logger({
                 colors: LoggerFactory.customColors,
                 transports: [
@@ -44,10 +45,10 @@ export class LoggerFactory {
                         level: logLevel
                     }),
                     new (winston.transports.Logstash) ({
-                        port: 4560,
+                        port: logstashPort,
                         level: logLevel,
                         node_name: 'aurora',
-                        host: '10.7.12.10'
+                        host: logstashHost
                     })
                 ]
             });

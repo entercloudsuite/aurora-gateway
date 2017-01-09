@@ -5,9 +5,11 @@ export class AppConfig {
   port: number;
   logLevel: string; // 'debug' | 'verbose' | 'info' | 'warn' | 'error';
   serveStatic: boolean;
-  sessionSecret: string
+  sessionSecret: string;
   openstack_auth_url: string;
   openstack_api_version: string;
+  logstashHost: string;
+  logstashPort: number;
   // optional environment variables
   enableHttpRequestLogging: boolean;
 
@@ -21,6 +23,8 @@ export class AppConfig {
     this.sessionSecret = this.getStringEnvVar('SESSION_SECRET');
     // optional environment variables
     this.enableHttpRequestLogging = this.getBooleanEnvVar('ENABLE_HTTP_REQUEST_LOGGING', false);
+    this.logstashPort = this.getIntegerEnvVar('LOGSTASH_PORT');
+    this.logstashHost = this.getStringEnvVar('LOGSTASH_HOST');
   }
 
   getEnvironment(): any {

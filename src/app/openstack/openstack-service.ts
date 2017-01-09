@@ -37,6 +37,12 @@ export class OpenstackService {
     newServiceCatalog.forEach((item) => {
       item['endpoints'].forEach((endpoint) => {
         if (!(endpoint['id'] in this.serviceCatalog)) {
+          // Remove tenant id from urls
+          if (item['name'].includes('cinder') || item['name'].includes('nova')) {
+            endpoint['adminURL'] = endpoint['adminURL'].substr(0, endpoint['adminURL'].lastIndexOf('/'));
+            endpoint['internalURL'] = endpoint['internalURL'].substr(0, endpoint['internalURL'].lastIndexOf('/'));
+            endpoint['publicURL'] = endpoint['publicURL'].substr(0, endpoint['publicURL'].lastIndexOf('/'));
+          }
           this.serviceCatalog[endpoint['id']] = {
             'adminURL': endpoint['adminURL'],
             'region': endpoint['region'],
@@ -48,10 +54,15 @@ export class OpenstackService {
         }
       });
     });
+
+    OpenstackService.LOGGER.info(`Service Catalog: ${JSON.stringify(this.serviceCatalog)}`);
   }
 
   proxyRequest(initialRequest: any): Promise<any> {
     initialRequest.headers['x-auth-token'] = initialRequest.session.token;
+    if (initialRequest.headers['tenant-id']) {
+      initialRequest.url = '/' + initialRequest.headers['tenant-id'] + initialRequest.url;
+    }
     OpenstackService.LOGGER.debug(`Proxy request headers -  ${JSON.stringify(initialRequest.headers)}`);
     return OpenstackService.sendRequest({
       'method': initialRequest.method,
