@@ -25,11 +25,20 @@ export class ExpressAppFactory {
     app.use(bodyParser.json());
     app.use(expressSession({
       secret: appConfig.sessionSecret,
-      maxAge: new Date(Date.now() + 3600000),
-      expires: new Date(Date.now() + 3600000),
-      saveUninitialized: true
+      saveUninitialized: true,
+      resave: true,
+      cookie: {
+        maxAge: 3600000,
+        httpOnly: false,
+        expires: new Date(Date.now() + 3600000)
+      }
     }));
-    app.use(cors());
+
+    app.use(cors({
+      origin: true,
+      optionsSuccessStatus: 200,
+      credentials: true
+    }));
     
     if (appConfig.serveStatic) {
       ExpressAppFactory.LOGGER.info(`Serving static files from public`);

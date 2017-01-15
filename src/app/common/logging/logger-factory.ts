@@ -1,6 +1,4 @@
 import winston = require('winston');
-require('winston-logstash');
-require('winston-daily-rotate-file');
 import fs = require('fs');
 import { LoggerInstance } from 'winston';
 
@@ -21,11 +19,15 @@ export class LoggerFactory {
         if (!fs.existsSync('./logs')) {
             fs.mkdir('./logs');
         }
-        
+
+        const loggerOptions: any = {
+            write: message => {
+                LoggerFactory.logger.info(message);
+            }
+        };
+
         if (!LoggerFactory.logger) {
             const logLevel = process.env['LOG_LEVEL'];
-            const logstashHost = process.env['LOGSTASH_HOST'];
-            const logstashPort = process.env['LOGSTASH_PORT'];
             LoggerFactory.logger = new winston.Logger({
                 colors: LoggerFactory.customColors,
                 transports: [
@@ -43,23 +45,14 @@ export class LoggerFactory {
                         maxSize: 1000,
                         maxFiles: 5,
                         level: logLevel
-                    }),
-                    new (winston.transports.Logstash) ({
-                        port: logstashPort,
-                        level: logLevel,
-                        node_name: 'aurora',
-                        host: logstashHost
                     })
                 ]
             });
         }
 
-        LoggerFactory.logger.stream = {
-            write: message => {
-                LoggerFactory.logger.info(message);
-            }
-        };
 
+
+        LoggerFactory.logger.stream = loggerOptions;
         winston.addColors(LoggerFactory.customColors);
         return LoggerFactory.logger;
     }
