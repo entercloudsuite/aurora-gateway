@@ -1,6 +1,6 @@
 import { RestRouter } from '../../../common';
 import { NeutronController } from './neutron-controller';
-import { OpenstackService } from '../../../openstack';
+import { OpenstackService } from '../../../services';
 
 export class NeutronRouter extends RestRouter {
   novaController: NeutronController;

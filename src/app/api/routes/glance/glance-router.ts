@@ -1,6 +1,6 @@
 import { RestRouter } from '../../../common';
 import { GlanceController } from './glance-controller';
-import { OpenstackService } from '../../../openstack';
+import { OpenstackService } from '../../../services';
 
 export class GlanceRouter extends RestRouter {
   glanceController: GlanceController;

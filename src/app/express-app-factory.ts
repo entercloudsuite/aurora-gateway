@@ -29,8 +29,7 @@ export class ExpressAppFactory {
       resave: true,
       cookie: {
         maxAge: 3600000,
-        httpOnly: false,
-        expires: new Date(Date.now() + 3600000)
+        httpOnly: false
       }
     }));
 

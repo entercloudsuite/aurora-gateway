@@ -6,7 +6,7 @@ import { NeutronRouter } from './routes/neutron/neutron-router';
 import { CinderRouter } from './routes/cinder/cinder-router';
 import { GlanceRouter } from './routes/glance/glance-router';
 import { Logger, LoggerFactory, InvalidResourceUrlError } from '../common';
-import { OpenstackService, IdentityService } from '../openstack';
+import { OpenstackService, IdentityService } from '../services';
 
 export class ApiRouterFactory {
 

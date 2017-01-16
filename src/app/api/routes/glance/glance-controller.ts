@@ -1,5 +1,5 @@
 import {Logger, LoggerFactory, RestController} from '../../../common';
-import {OpenstackService} from '../../../openstack';
+import {OpenstackService} from '../../../services';
 
 export class GlanceController extends RestController {
   constructor(private openstackService: OpenstackService) {

@@ -1,5 +1,5 @@
 import request = require('request');
-import {Logger, LoggerFactory, InternalError, ApiError, InvalidJsonError} from '../common';
+import {Logger, LoggerFactory, InternalError, ApiError, InvalidJsonError, ResourceNotFoundError} from '../../common';
 import util = require('util');
 
 export class OpenstackService {
@@ -71,7 +71,17 @@ export class OpenstackService {
       'body': initialRequest.body
     });
   }
-
+  
+  getServiceCatalog(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.serviceCatalog) {
+        return resolve(this.serviceCatalog);
+      } else {
+        return reject(new ResourceNotFoundError());
+      }
+    });
+  }
+  
   static  sendRequest(options: {}): Promise<any> {
     let requestOptions = {
       'method': options['method'] || 'GET',

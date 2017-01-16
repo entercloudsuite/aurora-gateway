@@ -1,6 +1,6 @@
 import { RestRouter } from '../../../common';
 import { CinderController } from './cinder-controller';
-import { OpenstackService } from '../../../openstack';
+import { OpenstackService } from '../../../services';
 
 export class CinderRouter extends RestRouter {
   cinderController: CinderController;

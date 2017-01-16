@@ -1,6 +1,6 @@
 import { RestRouter } from '../../../common';
 import { NovaController } from './nova-controller';
-import { OpenstackService } from '../../../openstack';
+import { OpenstackService } from '../../../services';
 
 export class NovaRouter extends RestRouter {
   novaController: NovaController;

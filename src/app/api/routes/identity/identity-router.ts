@@ -1,6 +1,6 @@
 import { RestRouter } from '../../../common';
 import { IdentityController } from './identity-controller';
-import { IdentityService, OpenstackService } from '../../../openstack';
+import { IdentityService, OpenstackService } from '../../../services';
 
 export class IdentityRouter extends RestRouter {
   identityController: IdentityController;
@@ -17,6 +17,7 @@ export class IdentityRouter extends RestRouter {
     this.router.get('/extensions', this.wrapRouteFn(this.identityController, this.identityController.listExtensions));
     this.router.get('/tenants', this.wrapRouteFn(this.identityController, this.identityController.listTenants));
     this.router.get('/logout', this.wrapRouteFn(this.identityController, this.identityController.logout));
+    this.router.get('/service-catalog', this.wrapRouteFn(this.identityController, this.identityController.getServiceCatalog));
     this.router.all('/', this.wrapRouteFn(this.identityController, this.identityController.throwMethodNotAllowedError));
   }
 }

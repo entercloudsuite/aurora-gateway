@@ -1,5 +1,5 @@
 import {Logger, LoggerFactory, RestController} from '../../../common';
-import {IdentityService, OpenstackService} from '../../../openstack';
+import {IdentityService, OpenstackService} from '../../../services';
 
 export class IdentityController extends RestController {
   constructor(private identityService: IdentityService, private openstackService: OpenstackService) {
@@ -36,6 +36,14 @@ export class IdentityController extends RestController {
         return this.forwardResponse(res, result.body, result.statusCode);
       });
   };
+
+  getServiceCatalog(req, res, next): Promise<any> {
+    return this.openstackService.getServiceCatalog()
+      .then(result => {
+        return this.respond(res, result);
+      })
+      .catch(error => { next(error); });
+  }
 
   logout(req, res, next): Promise<any> {
     IdentityController.LOGGER.debug(`Log out for use - ${req.session.username}`);

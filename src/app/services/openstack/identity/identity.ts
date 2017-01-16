@@ -1,5 +1,5 @@
 import {OpenstackService} from '../openstack-service';
-import {Logger, LoggerFactory, NotImplementedError, InternalError } from '../../common';
+import {Logger, LoggerFactory, NotImplementedError, InternalError } from '../../../common';
 
 export class IdentityService {
   private authUrl: string;

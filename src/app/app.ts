@@ -3,7 +3,7 @@ import 'core-js/library';
 import { Logger, LoggerFactory } from './common';
 import { Express, Router } from 'express';
 import { AppConfig } from './config';
-import { OpenstackService } from './openstack';
+import { OpenstackService } from './services';
 import { ExpressAppFactory } from './express-app-factory';
 import { ApiRouterFactory } from './api';
 import { RestErrorMiddleware } from './common';
