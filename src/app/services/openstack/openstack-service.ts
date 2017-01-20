@@ -1,26 +1,34 @@
 import http = require('http');
 import request = require('request');
-import {Logger, LoggerFactory, InternalError, ApiError, InvalidJsonError, ResourceNotFoundError} from '../../common';
+import { Logger, LoggerFactory, InternalError, ApiError, InvalidJsonError, ResourceNotFoundError } from '../../common';
 import util = require('util');
+import url = require('url');
 import events = require('events');
 import { EventEmitter } from '../../common';
+import { OpenstackRequest } from '../../../@types_local/openstack-request';
 
 export class OpenstackService {
-  public authUrl: string;
-  private region: string;
+  public keystoneApiHost: string;
+  public keystoneApiPort: string;
+  public keystoneApiPath: string;
   public serviceCatalog: {};
-  public apiVersion: string;
+  public keystoneApiVersion: string;
   
-  private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+  private static LOGGER: Logger = LoggerFactory.getLogger();
 
   constructor(options: {}) {
     OpenstackService.LOGGER.info('Instatiating OpenstackService');
-    this.authUrl = options['uri'];
-    this.apiVersion = options['version'];
+    this.keystoneApiHost = options.host;
+    this.keystoneApiPort = options.port;
+    this.keystoneApiPath = options.path;
+    this.keystoneApiVersion = options.version;
     this.serviceCatalog = {};
-    OpenstackService.LOGGER.info(`OpenStack API Version - ${this.apiVersion}`);
-    OpenstackService.LOGGER.info(`Keystone URL - ${this.authUrl}`);
-    OpenstackService.sendRequest({'uri': this.authUrl})
+    
+    OpenstackService.sendRequest(<OpenstackRequest> {
+      host: this.keystoneApiHost,
+      port: this.keystoneApiPort,
+      path: this.keystoneApiPath
+    })
       .then((result) => {
         if (result.statusCode !== 200) {
           OpenstackService.LOGGER.error('Unable to reach Openstack API on specified endpoint');
@@ -30,7 +38,7 @@ export class OpenstackService {
         OpenstackService.LOGGER.debug(result.body);
       })
       .catch((error) => {
-        OpenstackService.LOGGER.error('Error while testing OpenStack API');
+        OpenstackService.LOGGER.error('Error while testing Keystone connection');
         throw new InternalError(error);
       });
   }
@@ -43,7 +51,6 @@ export class OpenstackService {
           if (item['name'] === 'ceilometer') {
             EventEmitter.emit('monitoringInstantiate', item);
           }
-
           // Remove tenant id from urls on nova and cinder
           if (item['name'].includes('cinder') || item['name'].includes('nova')) {
             endpoint['adminURL'] = endpoint['adminURL'].substr(0, endpoint['adminURL'].lastIndexOf('/'));
@@ -51,13 +58,21 @@ export class OpenstackService {
             endpoint['publicURL'] = endpoint['publicURL'].substr(0, endpoint['publicURL'].lastIndexOf('/'));
           }
 
+          let publicUrl = url.parse(endpoint['publicURL']);
+          let urlObj = {
+            port: publicUrl.port,
+            host: publicUrl.hostname,
+            path: publicUrl.path
+          };
+
           this.serviceCatalog[endpoint['id']] = {
-            'adminURL': endpoint['adminURL'],
-            'region': endpoint['region'],
-            'internalURL': endpoint['internalURL'],
-            'publicURL': endpoint['publicURL'],
-            'type': item['type'],
-            'name': item['name']
+            adminURL: endpoint['adminURL'],
+            region: endpoint['region'],
+            internalURL: endpoint['internalURL'],
+            publicURL: endpoint['publicURL'],
+            type: item['type'],
+            name: item['name'],
+            url: urlObj
           };
         }
       });
@@ -66,20 +81,23 @@ export class OpenstackService {
     OpenstackService.LOGGER.info(`Service Catalog: ${JSON.stringify(this.serviceCatalog)}`);
   }
 
-  proxyRequest(initialRequest: any): Promise<any> {
+  proxyRequest(initialRequest: OpenstackRequest): Promise<any> {
     initialRequest.headers['x-auth-token'] = initialRequest.session.token;
     if (initialRequest.headers['tenant-id']) {
       initialRequest.url = '/' + initialRequest.headers['tenant-id'] + initialRequest.url;
     }
     OpenstackService.LOGGER.debug(`Proxy request headers -  ${JSON.stringify(initialRequest.headers)}`);
     OpenstackService.LOGGER.debug(`Proxy request body -  ${JSON.stringify(initialRequest.body)}`);
-    return OpenstackService.sendRequest({
-      'method': initialRequest.method,
-      'uri': this.serviceCatalog[initialRequest.headers['endpoint-id']].publicURL + initialRequest.url,
-      'headers': initialRequest.headers,
-      'body': initialRequest.body
+    return OpenstackService.sendRequest( <OpenstackRequest> {
+      method: initialRequest.method,
+      host: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.host,
+      port: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.port,
+      path: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.path + initialRequest.url,
+      headers: initialRequest.headers,
+      body: initialRequest.body
     });
   }
+
   
   getServiceCatalog(): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -91,32 +109,62 @@ export class OpenstackService {
     });
   }
   
-  static  sendRequest(options: {}): Promise<any> {
+  static  sendRequest(options: OpenstackRequest): Promise<any> {
+    let requestBody = '';
     let requestOptions = {
-      'method': options['method'] || 'GET',
-      'uri': options['uri'],
-      'json': options['json'] || true,
-      'headers': options['headers'] || {'content-type': 'application/json'},
-      'forever': true
+      protocol: 'http:' || options.protocol,
+      host: options.host,
+      port: options.port,
+      path: options.path,
+      method: options.method || 'GET',
+      headers: options.headers || {}
     };
 
-    if (options['body']) {
-      requestOptions['body'] = options['body'];
+    requestOptions.headers['Content-Type'] = 'application/json';
+    if (options.body) {
+      requestBody = JSON.stringify(options.body);
+      requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody);
     }
 
     OpenstackService.LOGGER.debug(`Calling OpenStack API with ${JSON.stringify(requestOptions)}`);
     return new Promise((resolve, reject) => {
-      request(requestOptions, (err, response, body) => {
-        if (err) {
-          return reject(new InternalError(err));
-        }
-        OpenstackService.LOGGER.info(`OpenStack API Response - ${JSON.stringify(response.body)}`);
-        if (body['error']) {
-          return reject(new ApiError(body.error.message, body.error.code, body.error.title));
-        } else {
-          return resolve(response);
-        }
+      let responseBody: string = '';
+      const openstackRequest = http.request(requestOptions, (res) => {
+        res.setEncoding('utf8');
+        res.on('data', chunk => {
+          OpenstackService.LOGGER.debug(`Response body - ${chunk}`);
+          responseBody += chunk;
+        });
+
+        res.on('end', () => {
+          // In some cases OpenStack APIs do not return a body
+          if (parseInt(res.headers['content-length']) > 0) {
+            res['body'] = JSON.parse(responseBody);
+          } else if (res.statusCode >= 200 && res.statusCode < 300) {
+            res['body'] = {'info': 'Successful API call'};
+            return resolve(res);
+          }
+
+          OpenstackService.LOGGER.info(`OpenStack API Response - ${JSON.stringify(res.body)}`);
+          if (res.body.error) {
+             return reject((new ApiError(res.body.error.message, res.body.error.code, res.body.error.title)));
+          }
+          else {
+             return resolve(res);
+          }
+        });
       });
+
+      openstackRequest.on('error', (requestError) => {
+        OpenstackService.LOGGER.error(`Request error - ${JSON.stringify(requestError)}`);
+        return reject(new InternalError(requestError));
+      });
+
+      if (requestBody) {
+        openstackRequest.write(requestBody);
+      }
+
+      openstackRequest.end();
     });
   };
 
@@ -127,11 +175,11 @@ export class OpenstackService {
         case '2.0':
           if (credentials['username'] && credentials['password']) {
             return resolve({
-              'auth': {
-                'tenantName': credentials['tenant'] || '',
-                'passwordCredentials': {
-                  'username': credentials['username'],
-                  'password': credentials['password']
+              auth: {
+                tenantName: credentials['tenant'] || '',
+                passwordCredentials: {
+                  username: credentials['username'],
+                  password: credentials['password']
                 }
               }
             });

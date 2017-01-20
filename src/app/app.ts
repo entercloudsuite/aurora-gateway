@@ -16,8 +16,10 @@ const appConfig: AppConfig = new AppConfig(process.env);
 
 const openstackService: OpenstackService = new OpenstackService(
   {
-    'uri': appConfig.openstack_auth_url, 
-    'version': appConfig.openstack_api_version
+    host: appConfig.keystone_api_host,
+    port: appConfig.keystone_api_port,
+    path: appConfig.keystone_api_path,
+    version: appConfig.keystone_api_version
   });
 const apiRouter: Router = ApiRouterFactory.getApiRouter(openstackService);
 

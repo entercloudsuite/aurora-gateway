@@ -13,7 +13,10 @@ export class ApiRouterFactory {
   static getApiRouter(openstackService: OpenstackService): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
 
-    const identityService = new IdentityService(openstackService.authUrl, openstackService.apiVersion);
+    const identityService = new IdentityService(
+      openstackService.keystoneApiHost, openstackService.keystoneApiPort, 
+      openstackService.keystoneApiPath, openstackService.keystoneApiVersion
+    );
     const pluginManager = new PluginManager();
     const monitoringService = new MonitoringService();
     MonitoringService.registerEvents(monitoringService);

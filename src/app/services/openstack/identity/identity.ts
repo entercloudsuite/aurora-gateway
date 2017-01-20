@@ -1,13 +1,24 @@
 import {OpenstackService} from '../openstack-service';
 import {Logger, LoggerFactory, NotImplementedError, InternalError } from '../../../common';
+import { OpenstackRequest } from '../../../../@types_local/openstack-request';
 
 export class IdentityService {
-  private authUrl: string;
+  private apiHost: string;
+  private apiPath: string;
+  private apiPort: string;
   private apiVersion: string;
+  private requestObject: OpenstackRequest;
 
-  constructor(keystoneURL: string, apiVersion: string) {
-    this.authUrl = keystoneURL;
+  constructor(apiHost: string, apiPort: string, apiPath: string, apiVersion: string) {
+    this.apiHost = apiHost;
+    this.apiPath = apiPath;
+    this.apiPort = apiPort;
     this.apiVersion = apiVersion;
+    this.requestObject = <OpenstackRequest> {
+      host: this.apiHost,
+      port: this.apiPort,
+      path: this.apiPath
+    };
   }
 
   private static LOGGER: Logger = LoggerFactory.getLogger();
@@ -62,10 +73,12 @@ export class IdentityService {
   getToken(credentials: {}): Promise<any> {
     // TODO: Abstract endpoint for different API versions
     IdentityService.LOGGER.debug('Requesting token from Keystone');
-    return OpenstackService.sendRequest({
-      'method': 'POST',
-      'uri': this.authUrl + '/tokens',
-      'body': credentials
+    return OpenstackService.sendRequest(<OpenstackRequest> {
+      path: this.apiPath + '/tokens',
+      port: this.apiPort,
+      host: this.apiHost,
+      body: credentials,
+      method: 'POST'
     });
   }
 
@@ -87,21 +100,27 @@ export class IdentityService {
 
   listTenants(apiToken: string): Promise<any> {
     IdentityService.LOGGER.debug(`Getting tenant list for ${apiToken}`);
-    return OpenstackService.sendRequest({
-      'uri': this.authUrl + '/tenants',
-      'headers': {'X-Auth-Token': apiToken}
+    return OpenstackService.sendRequest(<OpenstackRequest> {
+      path: this.apiPath + '/tenants',
+      port: this.apiPort,
+      host: this.apiHost,
+      headers: { 'X-Auth-Token': apiToken }
     });
   }
 
   listExtensions(): Promise<any> {
     IdentityService.LOGGER.debug('Listing extensions');
-    return OpenstackService.sendRequest({
-      'uri': this.authUrl + '/extensions'
-    });
+    let requestObject = this.requestObject;
+    requestObject.path = this.apiPath + '/extensions';
+    return OpenstackService.sendRequest(this.requestObject);
   }
 
   listVersions(): Promise<any> {
     IdentityService.LOGGER.debug('Listing OpenStack API versions');
-    return OpenstackService.sendRequest({'uri': this.authUrl});
+    return OpenstackService.sendRequest(<OpenstackRequest> {
+      path: this.apiPath,
+      port: this.apiPort,
+      host: this.apiHost
+    });
   }
 }

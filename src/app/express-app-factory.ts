@@ -38,7 +38,7 @@ export class ExpressAppFactory {
       credentials: true
     }));
     
-    if (appConfig.serveStatic) {
+    if (appConfig.serveStatic) {l
       ExpressAppFactory.LOGGER.info(`Serving static files from public`);
       app.use(express.static('public'));
     }
