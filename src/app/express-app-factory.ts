@@ -35,7 +35,6 @@ export class ExpressAppFactory {
 
     app.use(cors({
       origin: true,
-      optionsSuccessStatus: 200,
       credentials: true
     }));
     

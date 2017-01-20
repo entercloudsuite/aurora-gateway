@@ -7,12 +7,18 @@ import { OpenstackService } from './services';
 import { ExpressAppFactory } from './express-app-factory';
 import { ApiRouterFactory } from './api';
 import { RestErrorMiddleware } from './common';
+import events = require('events');
 import util = require('util');
+
 const LOGGER: Logger = LoggerFactory.getLogger();
 
 const appConfig: AppConfig = new AppConfig(process.env);
 
-const openstackService: OpenstackService = new OpenstackService({'uri': appConfig.openstack_auth_url, 'version': appConfig.openstack_api_version});
+const openstackService: OpenstackService = new OpenstackService(
+  {
+    'uri': appConfig.openstack_auth_url, 
+    'version': appConfig.openstack_api_version
+  });
 const apiRouter: Router = ApiRouterFactory.getApiRouter(openstackService);
 
 // Get the application middleware (to be mounted after the api router)

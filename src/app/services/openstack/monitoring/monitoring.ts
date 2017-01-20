@@ -1,16 +1,39 @@
 import { Logger, LoggerFactory } from '../../../common';
+import { Publisher } from '../../publisher';
+import { EventEmitter } from '../../../common';
 
-export class MonitoringService {
-  private defaultService: string;
-  private defaultProvider: string;
-  private transport: any;
+import events = require('events');
+export class MonitoringService extends Publisher {
+  private serviceName: string;
+  private serviceEndpoints: {};
 
-  constructor(options: {}) {
-    /**
-     * Instantiate object
-     *  Validate options (ceilometerUrl, ProviderStatus)
-     */
+  private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+
+  constructor() {
+    super();
+    this.serviceEndpoints = {};
   }
 
-  get
+  static registerEvents(monitoringInstance: MonitoringService) {
+    MonitoringService.LOGGER.debug('Adding listeners to monitoring service instance');
+    
+    EventEmitter.once('monitoringInstantiate', monitoringDetails => {
+      MonitoringService.LOGGER.info('Updating Monitoring service');
+      monitoringInstance.serviceName = monitoringDetails['name'];
+      monitoringDetails['endpoints'].forEach(endpoint => {
+        const endpointId = endpoint.id;
+        delete endpoint.id;
+        monitoringInstance.serviceEndpoints[endpointId] = endpoint;
+      });
+    });
+    
+    EventEmitter.on('registerMonitoringPlugin', pluginOptions => {
+      MonitoringService.LOGGER.info('publishing new plugin');
+      monitoringInstance.publishPlugin('recordUsage', pluginOptions);
+    });
+  }
+  
+  publishPlugin(type: string, options: {}): Promise<any> {
+    return this.publishMessage(this.monitoringExchangeName, type, 'monitoring', options);
+  }
 }

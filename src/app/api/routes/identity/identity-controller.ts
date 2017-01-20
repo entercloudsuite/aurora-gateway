@@ -17,7 +17,6 @@ export class IdentityController extends RestController {
   }
 
   authenticate(req, res, next): Promise<any> {
-    // TODO : Log username
     IdentityController.LOGGER.debug(`Authenticating user ${req.body['username']}`);
     return this.identityService.authenticate(req.body)
       .then((result) => {

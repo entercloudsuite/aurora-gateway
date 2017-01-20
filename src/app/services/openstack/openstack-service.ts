@@ -1,13 +1,16 @@
+import http = require('http');
 import request = require('request');
 import {Logger, LoggerFactory, InternalError, ApiError, InvalidJsonError, ResourceNotFoundError} from '../../common';
 import util = require('util');
+import events = require('events');
+import { EventEmitter } from '../../common';
 
 export class OpenstackService {
   public authUrl: string;
   private region: string;
   public serviceCatalog: {};
   public apiVersion: string;
-
+  
   private static readonly LOGGER: Logger = LoggerFactory.getLogger();
 
   constructor(options: {}) {
@@ -15,7 +18,6 @@ export class OpenstackService {
     this.authUrl = options['uri'];
     this.apiVersion = options['version'];
     this.serviceCatalog = {};
-
     OpenstackService.LOGGER.info(`OpenStack API Version - ${this.apiVersion}`);
     OpenstackService.LOGGER.info(`Keystone URL - ${this.authUrl}`);
     OpenstackService.sendRequest({'uri': this.authUrl})
@@ -34,15 +36,21 @@ export class OpenstackService {
   }
 
   updateServiceCatalog(newServiceCatalog: Array<{}>) {
+    // TODO: Add method desciption with hash map structure
     newServiceCatalog.forEach((item) => {
       item['endpoints'].forEach((endpoint) => {
         if (!(endpoint['id'] in this.serviceCatalog)) {
-          // Remove tenant id from urls
+          if (item['name'] === 'ceilometer') {
+            EventEmitter.emit('monitoringInstantiate', item);
+          }
+
+          // Remove tenant id from urls on nova and cinder
           if (item['name'].includes('cinder') || item['name'].includes('nova')) {
             endpoint['adminURL'] = endpoint['adminURL'].substr(0, endpoint['adminURL'].lastIndexOf('/'));
             endpoint['internalURL'] = endpoint['internalURL'].substr(0, endpoint['internalURL'].lastIndexOf('/'));
             endpoint['publicURL'] = endpoint['publicURL'].substr(0, endpoint['publicURL'].lastIndexOf('/'));
           }
+
           this.serviceCatalog[endpoint['id']] = {
             'adminURL': endpoint['adminURL'],
             'region': endpoint['region'],
@@ -64,6 +72,7 @@ export class OpenstackService {
       initialRequest.url = '/' + initialRequest.headers['tenant-id'] + initialRequest.url;
     }
     OpenstackService.LOGGER.debug(`Proxy request headers -  ${JSON.stringify(initialRequest.headers)}`);
+    OpenstackService.LOGGER.debug(`Proxy request body -  ${JSON.stringify(initialRequest.body)}`);
     return OpenstackService.sendRequest({
       'method': initialRequest.method,
       'uri': this.serviceCatalog[initialRequest.headers['endpoint-id']].publicURL + initialRequest.url,
@@ -87,7 +96,8 @@ export class OpenstackService {
       'method': options['method'] || 'GET',
       'uri': options['uri'],
       'json': options['json'] || true,
-      'headers': options['headers'] || {'content-type': 'application/json'}
+      'headers': options['headers'] || {'content-type': 'application/json'},
+      'forever': true
     };
 
     if (options['body']) {
