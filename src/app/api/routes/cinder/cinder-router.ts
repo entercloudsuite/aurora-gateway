@@ -1,6 +1,7 @@
 import { RestRouter } from '../../../common';
 import { CinderController } from './cinder-controller';
 import { OpenstackService } from '../../../services';
+import { RouterUtils } from '../../../utils';
 
 export class CinderRouter extends RestRouter {
   cinderController: CinderController;
@@ -12,6 +13,8 @@ export class CinderRouter extends RestRouter {
   }
 
   initRoutes() {
-    this.router.all('/*', this.wrapRouteFn(this.cinderController, this.cinderController.proxyRequest));
+    this.router.all(
+      '/*', RouterUtils.checkEndpointID, RouterUtils.checkTenantID,
+      this.wrapRouteFn(this.cinderController, this.cinderController.proxyRequest));
   }
 }

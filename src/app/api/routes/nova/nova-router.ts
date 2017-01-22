@@ -1,6 +1,7 @@
 import { RestRouter } from '../../../common';
 import { NovaController } from './nova-controller';
 import { OpenstackService } from '../../../services';
+import { RouterUtils } from '../../../utils';
 
 export class NovaRouter extends RestRouter {
   novaController: NovaController;
@@ -12,6 +13,9 @@ export class NovaRouter extends RestRouter {
   }
 
   initRoutes() {
-    this.router.all('/*', this.wrapRouteFn(this.novaController, this.novaController.proxyRequest));
+    this.router.all(
+      '/*', RouterUtils.checkEndpointID, RouterUtils.checkTenantID,
+      this.wrapRouteFn(this.novaController, this.novaController.proxyRequest)
+    );
   }
 }

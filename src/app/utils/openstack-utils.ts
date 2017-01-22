@@ -1,4 +1,4 @@
-import { InvalidJsonError, ApiError, NotAuthenticated } from '../common';
+import { InvalidJsonError, ApiError } from '../common';
 
 export class OpenstackUtils {
   static parseCredentials(credentials: {}, apiVersion: string): Promise<any> {
@@ -51,12 +51,4 @@ export class OpenstackUtils {
       }
     });
   }
-
-  static isAuthenticated(req, res, next): any {
-    if (req.session.token) {
-      next();
-    } else {
-      res.json(new NotAuthenticated().toJSON());
-    }
-  }
- }
+}

@@ -1,6 +1,7 @@
 import { RestRouter } from '../../../common';
 import { GlanceController } from './glance-controller';
 import { OpenstackService } from '../../../services';
+import { RouterUtils } from '../../../utils';
 
 export class GlanceRouter extends RestRouter {
   glanceController: GlanceController;
@@ -12,6 +13,8 @@ export class GlanceRouter extends RestRouter {
   }
 
   initRoutes() {
-    this.router.all('/*', this.wrapRouteFn(this.glanceController, this.glanceController.proxyRequest));
+    this.router.all(
+      '/*', RouterUtils.checkEndpointID, 
+      this.wrapRouteFn(this.glanceController, this.glanceController.proxyRequest));
   }
 }

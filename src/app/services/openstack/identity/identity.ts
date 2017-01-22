@@ -26,8 +26,10 @@ export class IdentityService {
 
   authenticate(credentials: {}): Promise<any> {
     let result = {};
+    let parsedCredentials = {};
     return OpenstackUtils.parseCredentials(credentials, this.apiVersion)
       .then((authObj) => {
+        parsedCredentials = authObj;
         return this.getToken(authObj);
       })
       .then(response => {

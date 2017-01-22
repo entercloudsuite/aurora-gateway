@@ -1,6 +1,7 @@
 import { RestRouter } from '../../../common';
 import { IdentityController } from './identity-controller';
 import { IdentityService, OpenstackService } from '../../../services';
+import { RouterUtils } from '../../../utils';
 
 export class IdentityRouter extends RestRouter {
   identityController: IdentityController;
@@ -13,7 +14,7 @@ export class IdentityRouter extends RestRouter {
 
   initRoutes() {
     this.router.get('/', this.wrapRouteFn(this.identityController, this.identityController.listVersions));
-    this.router.post('/tokens', this.wrapRouteFn(this.identityController, this.identityController.authenticate));
+    this.router.post('/tokens', RouterUtils.checkCredentials, this.wrapRouteFn(this.identityController, this.identityController.authenticate));
     this.router.get('/extensions', this.wrapRouteFn(this.identityController, this.identityController.listExtensions));
     this.router.get('/tenants', this.wrapRouteFn(this.identityController, this.identityController.listTenants));
     this.router.get('/logout', this.wrapRouteFn(this.identityController, this.identityController.logout));
