@@ -6,6 +6,7 @@ import url = require('url');
 import events = require('events');
 import { EventEmitter } from '../../common';
 import { OpenstackRequest } from '../../../@types_local/openstack-request';
+import { OpenstackUtils } from '../../utils';
 
 export class OpenstackService {
   public keystoneApiHost: string;
@@ -88,7 +89,7 @@ export class OpenstackService {
     }
     OpenstackService.LOGGER.debug(`Proxy request headers -  ${JSON.stringify(initialRequest.headers)}`);
     OpenstackService.LOGGER.debug(`Proxy request body -  ${JSON.stringify(initialRequest.body)}`);
-    return OpenstackService.sendRequest( <OpenstackRequest> {
+    return OpenstackService.callOSApi( <OpenstackRequest> {
       method: initialRequest.method,
       host: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.host,
       port: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.port,
@@ -107,6 +108,22 @@ export class OpenstackService {
         return reject(new ResourceNotFoundError());
       }
     });
+  }
+  
+  static callOSApi(options: OpenstackRequest): Promise<any> {
+    return OpenstackService.sendRequest(options)
+      .then(APIResponse => {
+        OpenstackService.LOGGER.info(`Original OpenStack API Response - ${JSON.stringify(APIResponse.body)}`);
+        return OpenstackUtils.parseApiResponse(APIResponse);
+      })
+      .then(parsedResponse => {
+        OpenstackService.LOGGER.info(`Parsed OpenStack API Response - ${JSON.stringify(parsedResponse.body)}`);
+        return Promise.resolve(parsedResponse);
+      })
+      .catch(OSRequestError => {
+        OpenstackService.LOGGER.info(`Error occurred while trying to call OpenStack API - ${JSON.stringify(OSRequestError)}`);
+        return Promise.reject(OSRequestError);
+      });
   }
   
   static  sendRequest(options: OpenstackRequest): Promise<any> {
@@ -137,24 +154,11 @@ export class OpenstackService {
         });
 
         res.on('end', () => {
-          // In some cases OpenStack APIs do not return a body
-          if (parseInt(res.headers['content-length']) > 0) {
-            res['body'] = JSON.parse(responseBody);
-          } else if (res.statusCode >= 200 && res.statusCode < 300) {
-            res['body'] = {'info': 'Successful API call'};
-            return resolve(res);
-          }
-
-          OpenstackService.LOGGER.info(`OpenStack API Response - ${JSON.stringify(res.body)}`);
-          if (res.body.error) {
-             return reject((new ApiError(res.body.error.message, res.body.error.code, res.body.error.title)));
-          }
-          else {
-             return resolve(res);
-          }
+          res['body'] = responseBody;
+          return resolve(res);
         });
       });
-
+      
       openstackRequest.on('error', (requestError) => {
         OpenstackService.LOGGER.error(`Request error - ${JSON.stringify(requestError)}`);
         return reject(new InternalError(requestError));
@@ -167,29 +171,5 @@ export class OpenstackService {
       openstackRequest.end();
     });
   };
-
-  static parseCredentials(credentials: {}, apiVersion: string): Promise<any> {
-    OpenstackService.LOGGER.debug(`Parsing credentials - ${JSON.stringify(credentials)}`);
-    return new Promise((resolve, reject) => {
-      switch (apiVersion) {
-        case '2.0':
-          if (credentials['username'] && credentials['password']) {
-            return resolve({
-              auth: {
-                tenantName: credentials['tenant'] || '',
-                passwordCredentials: {
-                  username: credentials['username'],
-                  password: credentials['password']
-                }
-              }
-            });
-            // TODO: Add InvalidCredentialsError
-          } else return reject(new InvalidJsonError());
-        default:
-          // TODO: Handle exceptions
-          return resolve(credentials);
-      }
-    });
-  }
 }
 

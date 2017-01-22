@@ -1,6 +1,7 @@
 import {OpenstackService} from '../openstack-service';
 import {Logger, LoggerFactory, NotImplementedError, InternalError } from '../../../common';
 import { OpenstackRequest } from '../../../../@types_local/openstack-request';
+import { OpenstackUtils } from '../../../utils';
 
 export class IdentityService {
   private apiHost: string;
@@ -25,11 +26,11 @@ export class IdentityService {
 
   authenticate(credentials: {}): Promise<any> {
     let result = {};
-    return OpenstackService.parseCredentials(credentials, this.apiVersion)
+    return OpenstackUtils.parseCredentials(credentials, this.apiVersion)
       .then((authObj) => {
         return this.getToken(authObj);
       })
-      .then((response) => {
+      .then(response => {
         if (response.body.access.serviceCatalog.length === 0) {
           result = response.body;
           return this.listTenants(response.body.access.token.id);
@@ -73,7 +74,7 @@ export class IdentityService {
   getToken(credentials: {}): Promise<any> {
     // TODO: Abstract endpoint for different API versions
     IdentityService.LOGGER.debug('Requesting token from Keystone');
-    return OpenstackService.sendRequest(<OpenstackRequest> {
+    return OpenstackService.callOSApi(<OpenstackRequest> {
       path: this.apiPath + '/tokens',
       port: this.apiPort,
       host: this.apiHost,
@@ -84,7 +85,7 @@ export class IdentityService {
 
   getServiceCatalog(authObj: {}): Promise<any> {
     if (this.apiVersion === '2.0') {
-      return OpenstackService.parseCredentials(authObj, this.apiVersion)
+      return OpenstackUtils.parseCredentials(authObj, this.apiVersion)
         .then((authBody) => {
           return this.getToken(authBody);
         })
@@ -100,7 +101,7 @@ export class IdentityService {
 
   listTenants(apiToken: string): Promise<any> {
     IdentityService.LOGGER.debug(`Getting tenant list for ${apiToken}`);
-    return OpenstackService.sendRequest(<OpenstackRequest> {
+    return OpenstackService.callOSApi(<OpenstackRequest> {
       path: this.apiPath + '/tenants',
       port: this.apiPort,
       host: this.apiHost,
@@ -112,12 +113,12 @@ export class IdentityService {
     IdentityService.LOGGER.debug('Listing extensions');
     let requestObject = this.requestObject;
     requestObject.path = this.apiPath + '/extensions';
-    return OpenstackService.sendRequest(this.requestObject);
+    return OpenstackService.callOSApi(this.requestObject);
   }
 
   listVersions(): Promise<any> {
     IdentityService.LOGGER.debug('Listing OpenStack API versions');
-    return OpenstackService.sendRequest(<OpenstackRequest> {
+    return OpenstackService.callOSApi(<OpenstackRequest> {
       path: this.apiPath,
       port: this.apiPort,
       host: this.apiHost
