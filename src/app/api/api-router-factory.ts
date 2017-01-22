@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { IdentityRouter, NovaRouter, PluginRouter, NeutronRouter, GlanceRouter, CinderRouter } from './routes';
 import { Logger, LoggerFactory, InvalidResourceUrlError } from '../common';
 import { OpenstackService, IdentityService, PluginManager, MonitoringService } from '../services';
+import { OpenstackUtils } from '../utils';
 
 export class ApiRouterFactory {
 
@@ -30,11 +31,11 @@ export class ApiRouterFactory {
     
     ApiRouterFactory.LOGGER.info('Mounting routes');
     apiRouter.use('/identity', identityRouter);
-    apiRouter.use('/nova', novaRouter);
-    apiRouter.use('/cinder', cinderRouter);
-    apiRouter.use('/neutron', neutronRouter);
-    apiRouter.use('/glance', glanceRouter);
-    apiRouter.use('/plugins', pluginRouter);
+    apiRouter.use('/nova', OpenstackUtils.isAuthenticated, novaRouter);
+    apiRouter.use('/cinder', OpenstackUtils.isAuthenticated, cinderRouter);
+    apiRouter.use('/neutron', OpenstackUtils.isAuthenticated, neutronRouter);
+    apiRouter.use('/glance', OpenstackUtils.isAuthenticated, glanceRouter);
+    apiRouter.use('/plugins', OpenstackUtils.isAuthenticated, pluginRouter);
     
     apiRouter.all('*', (req, res, next) => {
       next(new InvalidResourceUrlError());

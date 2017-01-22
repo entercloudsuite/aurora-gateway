@@ -1,4 +1,4 @@
-import { InvalidJsonError, ApiError } from '../common';
+import { InvalidJsonError, ApiError, NotAuthenticated } from '../common';
 
 export class OpenstackUtils {
   static parseCredentials(credentials: {}, apiVersion: string): Promise<any> {
@@ -36,7 +36,7 @@ export class OpenstackUtils {
             'error': {
               'message': APIResponse.body,
               'code': APIResponse.statusCode,
-              'title': 'Unknown OpenStack API error' 
+              'title': 'Unknown OpenStack API error'
             }
           };
         }
@@ -51,4 +51,12 @@ export class OpenstackUtils {
       }
     });
   }
-}
+
+  static isAuthenticated(req, res, next): any {
+    if (req.session.token) {
+      next();
+    } else {
+      res.json(new NotAuthenticated().toJSON());
+    }
+  }
+ }

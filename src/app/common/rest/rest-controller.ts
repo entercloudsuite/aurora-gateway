@@ -5,12 +5,8 @@ import { MethodNotAllowedError, ResourceNotFoundError } from './errors';
 export class RestController {
   constructor() {}
 
-  respond(res: Response, item: any | Array<any>, statusCode: number = 200, forwardedResponse: boolean = false): Response {
-    if (forwardedResponse) {
-      return res.status(statusCode).json(item);
-    } else {
-      return res.status(statusCode).json(new RestResponse(item));
-    }
+  respond(res: Response, item: any | Array<any>, statusCode: number = 200): Response {
+    return res.status(statusCode).json(new RestResponse(item));
   }
 
   forwardResponse(res: Response,  data: any, statusCode: number = 200): Response {
