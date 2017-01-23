@@ -1,14 +1,14 @@
 import { RestRouter } from '../../../common';
 import { NovaController } from './nova-controller';
-import { OpenstackService } from '../../../services';
+import { NovaService } from '../../../services';
 import { RouterUtils } from '../../../utils';
 
 export class NovaRouter extends RestRouter {
   novaController: NovaController;
 
-  constructor(openstackService: OpenstackService) {
+  constructor(novaService: NovaService) {
     super();
-    this.novaController = new NovaController(openstackService);
+    this.novaController = new NovaController(novaService);
     this.initRoutes();
   }
 

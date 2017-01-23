@@ -1,28 +1,28 @@
-import {OpenstackService} from '../openstack-service';
-import {Logger, LoggerFactory, NotImplementedError, InternalError } from '../../../common';
-import { OpenstackRequest } from '../../../../@types_local/openstack-request';
-import { OpenstackUtils } from '../../../utils';
+import { OpenstackService } from './openstack-service';
+import { OpenstackAPIModel } from './openstack-api-model';
+import { EventEmitter, Logger, LoggerFactory, NotImplementedError, InternalError } from '../../common';
+import { OpenstackRequest } from '../../../@types_local/openstack-request';
+import { OpenstackUtils } from '../../utils';
 
-export class IdentityService {
+export class IdentityService extends OpenstackAPIModel {
   private apiHost: string;
   private apiPath: string;
   private apiPort: string;
   private apiVersion: string;
-  private requestObject: OpenstackRequest;
 
   constructor(apiHost: string, apiPort: string, apiPath: string, apiVersion: string) {
+    super();
+    this.name = 'keystone';
+    this.type = 'identity';
     this.apiHost = apiHost;
     this.apiPath = apiPath;
     this.apiPort = apiPort;
     this.apiVersion = apiVersion;
-    this.requestObject = <OpenstackRequest> {
-      host: this.apiHost,
-      port: this.apiPort,
-      path: this.apiPath
-    };
+    EventEmitter.eventEmitter.on(
+      EventEmitter.UPDATE_EVENTS.keystone,
+      OpenstackAPIModel.update_endpoint
+    );
   }
-
-  private static LOGGER: Logger = LoggerFactory.getLogger();
 
   authenticate(credentials: {}): Promise<any> {
     let result = {};
@@ -75,7 +75,7 @@ export class IdentityService {
 
   getToken(credentials: {}): Promise<any> {
     // TODO: Abstract endpoint for different API versions
-    IdentityService.LOGGER.debug('Requesting token from Keystone');
+    OpenstackAPIModel.LOGGER.debug('Requesting token from Keystone');
     return OpenstackService.callOSApi(<OpenstackRequest> {
       path: this.apiPath + '/tokens',
       port: this.apiPort,
@@ -85,24 +85,26 @@ export class IdentityService {
     });
   }
 
-  getServiceCatalog(authObj: {}): Promise<any> {
-    if (this.apiVersion === '2.0') {
-      return OpenstackUtils.parseCredentials(authObj, this.apiVersion)
-        .then((authBody) => {
-          return this.getToken(authBody);
-        })
-        .then((result) => {
-          return Promise.resolve(result);
-        });
-    } else {
-      return Promise.reject(
-        new NotImplementedError(`Feature is not available for this OpenStack API version ${this.apiVersion}`)
-      );
+  getServiceCatalog(authObj?: {}): Promise<any> {
+    if (authObj) {
+      if (this.apiVersion === '2.0') {
+        return OpenstackUtils.parseCredentials(authObj, this.apiVersion)
+          .then((authBody) => {
+            return this.getToken(authBody);
+          })
+          .then((result) => {
+            return Promise.resolve(result);
+          });
+      } else {
+        return Promise.reject(
+          new NotImplementedError(`Feature is not available for this OpenStack API version ${this.apiVersion}`)
+        );
+      } 
     }
   }
 
   listTenants(apiToken: string): Promise<any> {
-    IdentityService.LOGGER.debug(`Getting tenant list for ${apiToken}`);
+    OpenstackAPIModel.LOGGER.debug(`Getting tenant list for ${apiToken}`);
     return OpenstackService.callOSApi(<OpenstackRequest> {
       path: this.apiPath + '/tenants',
       port: this.apiPort,
@@ -112,14 +114,16 @@ export class IdentityService {
   }
 
   listExtensions(): Promise<any> {
-    IdentityService.LOGGER.debug('Listing extensions');
-    let requestObject = this.requestObject;
-    requestObject.path = this.apiPath + '/extensions';
-    return OpenstackService.callOSApi(this.requestObject);
+    OpenstackAPIModel.LOGGER.debug('Listing extensions');
+    return OpenstackService.callOSApi(<OpenstackRequest> {
+      path: this.apiPath + '/extensions',
+      port: this.apiPort,
+      host: this.apiHost
+    });
   }
 
   listVersions(): Promise<any> {
-    IdentityService.LOGGER.debug('Listing OpenStack API versions');
+    OpenstackAPIModel.LOGGER.debug('Listing OpenStack API versions');
     return OpenstackService.callOSApi(<OpenstackRequest> {
       path: this.apiPath,
       port: this.apiPort,

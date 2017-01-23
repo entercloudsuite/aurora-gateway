@@ -1,6 +1,6 @@
 import http = require('http');
 import request = require('request');
-import { Logger, LoggerFactory, InternalError, ApiError, InvalidJsonError, ResourceNotFoundError } from '../../common';
+import { Logger, LoggerFactory, InternalError, ApiError, ResourceNotFoundError } from '../../common';
 import util = require('util');
 import url = require('url');
 import events = require('events');
@@ -12,7 +12,6 @@ export class OpenstackService {
   public keystoneApiHost: string;
   public keystoneApiPort: string;
   public keystoneApiPath: string;
-  public serviceCatalog: {};
   public keystoneApiVersion: string;
   
   private static LOGGER: Logger = LoggerFactory.getLogger();
@@ -23,7 +22,11 @@ export class OpenstackService {
     this.keystoneApiPort = options.port;
     this.keystoneApiPath = options.path;
     this.keystoneApiVersion = options.version;
-    this.serviceCatalog = {};
+    
+    EventEmitter.eventEmitter.on(
+      EventEmitter.NEW_SERVICE_CATALOG,
+      this.updateServiceCatalog
+    );
     
     OpenstackService.sendRequest(<OpenstackRequest> {
       host: this.keystoneApiHost,
@@ -45,68 +48,10 @@ export class OpenstackService {
   }
 
   updateServiceCatalog(newServiceCatalog: Array<{}>) {
-    // TODO: Add method desciption with hash map structure
     newServiceCatalog.forEach((item) => {
       item['endpoints'].forEach((endpoint) => {
-        if (!(endpoint['id'] in this.serviceCatalog)) {
-          if (item['name'] === 'ceilometer') {
-            EventEmitter.emit('monitoringInstantiate', item);
-          }
-          // Remove tenant id from urls on nova and cinder
-          if (item['name'].includes('cinder') || item['name'].includes('nova')) {
-            endpoint['adminURL'] = endpoint['adminURL'].substr(0, endpoint['adminURL'].lastIndexOf('/'));
-            endpoint['internalURL'] = endpoint['internalURL'].substr(0, endpoint['internalURL'].lastIndexOf('/'));
-            endpoint['publicURL'] = endpoint['publicURL'].substr(0, endpoint['publicURL'].lastIndexOf('/'));
-          }
-
-          let publicUrl = url.parse(endpoint['publicURL']);
-          let urlObj = {
-            port: publicUrl.port,
-            host: publicUrl.hostname,
-            path: publicUrl.path
-          };
-
-          this.serviceCatalog[endpoint['id']] = {
-            adminURL: endpoint['adminURL'],
-            region: endpoint['region'],
-            internalURL: endpoint['internalURL'],
-            publicURL: endpoint['publicURL'],
-            type: item['type'],
-            name: item['name'],
-            url: urlObj
-          };
-        }
+        EventEmitter.emitUpdateEvent(item['name'], endpoint);
       });
-    });
-
-    OpenstackService.LOGGER.info(`Service Catalog: ${JSON.stringify(this.serviceCatalog)}`);
-  }
-
-  proxyRequest(initialRequest: OpenstackRequest): Promise<any> {
-    initialRequest.headers['x-auth-token'] = initialRequest.session.token;
-    if (initialRequest.headers['tenant-id']) {
-      initialRequest.url = '/' + initialRequest.headers['tenant-id'] + initialRequest.url;
-    }
-    OpenstackService.LOGGER.debug(`Proxy request headers -  ${JSON.stringify(initialRequest.headers)}`);
-    OpenstackService.LOGGER.debug(`Proxy request body -  ${JSON.stringify(initialRequest.body)}`);
-    return OpenstackService.callOSApi( <OpenstackRequest> {
-      method: initialRequest.method,
-      host: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.host,
-      port: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.port,
-      path: this.serviceCatalog[initialRequest.headers['endpoint-id']].url.path + initialRequest.url,
-      headers: initialRequest.headers,
-      body: initialRequest.body
-    });
-  }
-
-  
-  getServiceCatalog(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.serviceCatalog) {
-        return resolve(this.serviceCatalog);
-      } else {
-        return reject(new ResourceNotFoundError());
-      }
     });
   }
   

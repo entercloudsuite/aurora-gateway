@@ -1,14 +1,14 @@
 import { RestRouter } from '../../../common';
 import { GlanceController } from './glance-controller';
-import { OpenstackService } from '../../../services';
+import { GlanceService } from '../../../services';
 import { RouterUtils } from '../../../utils';
 
 export class GlanceRouter extends RestRouter {
   glanceController: GlanceController;
 
-  constructor(openstackService: OpenstackService) {
+  constructor(glanceService: GlanceService) {
     super();
-    this.glanceController = new GlanceController(openstackService);
+    this.glanceController = new GlanceController(glanceService);
     this.initRoutes();
   }
 

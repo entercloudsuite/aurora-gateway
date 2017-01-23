@@ -1,14 +1,14 @@
 import { RestRouter } from '../../../common';
 import { CinderController } from './cinder-controller';
-import { OpenstackService } from '../../../services';
+import { CinderService } from '../../../services';
 import { RouterUtils } from '../../../utils';
 
 export class CinderRouter extends RestRouter {
   cinderController: CinderController;
 
-  constructor(openstackService: OpenstackService) {
+  constructor(cinderService: CinderService) {
     super();
-    this.cinderController = new CinderController(openstackService);
+    this.cinderController = new CinderController(cinderService);
     this.initRoutes();
   }
 

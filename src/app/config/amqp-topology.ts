@@ -5,19 +5,14 @@ export class AMQPTopology {
   private bindings: [{}];
 
   public static monitoringExchangeName = 'aurora-monitoring-requests-x';
+  public static messageTypes = {
+    ADD: 'add',
+    DELETE: 'delete',
+    UPDATE: 'update'
+  };
+  
   constructor(connection) {
-    const defaultConnection = {
-      user: 'guest',
-      pass: 'guest',
-      server: [ '127.0.0.1' ],
-      port: 5672,
-      vhost: '%2f',
-      timeout: 1000,
-      failAfter: 30,
-      retryLimit: 400
-    };
-
-    this.connection = connection || defaultConnection;
+    this.connection = connection;
     
     this.exchanges = [
       {

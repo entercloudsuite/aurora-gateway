@@ -1,20 +1,20 @@
 import { RestRouter } from '../../../common';
 import { NeutronController } from './neutron-controller';
-import { OpenstackService } from '../../../services';
+import { NeutronService } from '../../../services';
 import { RouterUtils } from '../../../utils';
 
 export class NeutronRouter extends RestRouter {
-  novaController: NeutronController;
+  neutronController: NeutronController;
 
-  constructor(openstackService: OpenstackService) {
+  constructor(neutronService: NeutronService) {
     super();
-    this.novaController = new NeutronController(openstackService);
+    this.neutronController = new NeutronController(neutronService);
     this.initRoutes();
   }
 
   initRoutes() {
     this.router.all(
       '/*', RouterUtils.checkEndpointID, 
-      this.wrapRouteFn(this.novaController, this.novaController.proxyRequest));
+      this.wrapRouteFn(this.neutronController, this.neutronController.proxyRequest));
   }
 }

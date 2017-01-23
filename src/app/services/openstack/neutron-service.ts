@@ -1,13 +1,13 @@
 import { EventEmitter } from '../../common';
 import { OpenstackAPIModel } from './openstack-api-model';
 
-export class GlanceService extends OpenstackAPIModel {
+export class NeutronService extends OpenstackAPIModel {
   constructor() {
     super();
-    this.name = 'glance';
-    this.type = 'image';
+    this.name = 'neutron';
+    this.type = 'network';
     EventEmitter.eventEmitter.on(
-      EventEmitter.UPDATE_EVENTS.glance,
+      EventEmitter.UPDATE_EVENTS.neutron,
       OpenstackAPIModel.update_endpoint
     );
   }

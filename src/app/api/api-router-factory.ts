@@ -1,8 +1,15 @@
 import express = require('express');
 import { Router } from 'express';
-import { IdentityRouter, NovaRouter, PluginRouter, NeutronRouter, GlanceRouter, CinderRouter } from './routes';
+import { 
+  SwiftRouter, IdentityRouter, NovaRouter, PluginRouter, 
+  NeutronRouter, GlanceRouter, CinderRouter, MonitoringRouter 
+} from './routes';
 import { Logger, LoggerFactory, InvalidResourceUrlError } from '../common';
-import { OpenstackService, IdentityService, PluginManager, MonitoringService } from '../services';
+import {
+  NovaService, NeutronService, CinderService, GlanceService, SwiftService,
+  OpenstackService, IdentityService, PluginManager, MonitoringService
+} from '../services';
+import { EventEmitter } from '../common';
 import { RouterUtils } from '../utils';
 
 export class ApiRouterFactory {
@@ -20,14 +27,30 @@ export class ApiRouterFactory {
     );
     const pluginManager = new PluginManager();
     const monitoringService = new MonitoringService();
-    MonitoringService.registerEvents(monitoringService);
+    const novaService = new NovaService();
+    const neutronService = new NeutronService();
+    const glanceService = new GlanceService();
+    const cinderService = new CinderService();
+    const swiftService = new SwiftService();
 
-    const identityRouter: Router = new IdentityRouter(identityService, openstackService).router;
-    const novaRouter: Router = new NovaRouter(openstackService).router;
-    const neutronRouter: Router = new NeutronRouter(openstackService).router;
-    const cinderRouter: Router = new CinderRouter(openstackService).router;
-    const glanceRouter: Router = new GlanceRouter(openstackService).router;
+    EventEmitter.serviceInstances = {
+      nova: novaService,
+      neutron: neutronService,
+      glance: glanceService,
+      cinder: cinderService,
+      keystone: identityService,
+      monitoring: monitoringService,
+      swift: swiftService
+    };
+
+    const identityRouter: Router = new IdentityRouter(identityService).router;
+    const novaRouter: Router = new NovaRouter(novaService).router;
+    const neutronRouter: Router = new NeutronRouter(neutronService).router;
+    const cinderRouter: Router = new CinderRouter(cinderService).router;
+    const glanceRouter: Router = new GlanceRouter(glanceService).router;
+    const swiftRouter: Router = new SwiftRouter(swiftService).router;
     const pluginRouter: Router = new PluginRouter(pluginManager).router;
+    const monitoringRouter: Router = new MonitoringRouter(monitoringService).router;
     
     ApiRouterFactory.LOGGER.info('Mounting routes');
     apiRouter.use('/identity', identityRouter);
@@ -36,7 +59,8 @@ export class ApiRouterFactory {
     apiRouter.use('/neutron', RouterUtils.isAuthenticated, neutronRouter);
     apiRouter.use('/glance', RouterUtils.isAuthenticated, glanceRouter);
     apiRouter.use('/plugins', RouterUtils.isAuthenticated, pluginRouter);
-    
+    apiRouter.use('/swift', RouterUtils.isAuthenticated, swiftRouter);
+    apiRouter.use('/ceilometer', RouterUtils.isAuthenticated, monitoringRouter);
     apiRouter.all('*', (req, res, next) => {
       next(new InvalidResourceUrlError());
     });

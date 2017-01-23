@@ -2,24 +2,22 @@ import 'core-js/library';
 
 import { Logger, LoggerFactory } from './common';
 import { Express, Router } from 'express';
-import { AppConfig } from './config';
 import { OpenstackService } from './services';
 import { ExpressAppFactory } from './express-app-factory';
 import { ApiRouterFactory } from './api';
 import { RestErrorMiddleware } from './common';
-import events = require('events');
 import util = require('util');
+
+require('dotenv').config();
 
 const LOGGER: Logger = LoggerFactory.getLogger();
 
-const appConfig: AppConfig = new AppConfig(process.env);
-
 const openstackService: OpenstackService = new OpenstackService(
   {
-    host: appConfig.keystone_api_host,
-    port: appConfig.keystone_api_port,
-    path: appConfig.keystone_api_path,
-    version: appConfig.keystone_api_version
+    host: process.env.KEYSTONE_API_HOST,
+    port: process.env.KEYSTONE_API_PORT,
+    path: process.env.KEYSTONE_API_PATH,
+    version: process.env.KEYSTONE_API_VERSION
   });
 const apiRouter: Router = ApiRouterFactory.getApiRouter(openstackService);
 
@@ -29,10 +27,10 @@ const errorMiddleware = [
   RestErrorMiddleware.serializeRestError
 ];
 
-const app: Express = ExpressAppFactory.getExpressApp(appConfig, apiRouter, null, errorMiddleware);
+const app: Express = ExpressAppFactory.getExpressApp(apiRouter, null, errorMiddleware);
 
 ////////////////////
 
-app.listen(appConfig.port, () => {
-  LOGGER.info(`Express server listening on port ${appConfig.port}.`);
+app.listen(parseInt(process.env.PORT), () => {
+  LOGGER.info(`Express server listening on port ${process.env.PORT}.`);
 });

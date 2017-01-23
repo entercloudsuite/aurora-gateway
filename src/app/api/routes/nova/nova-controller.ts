@@ -1,15 +1,18 @@
 import {Logger, LoggerFactory, RestController} from '../../../common';
-import {OpenstackService} from '../../../services';
+import { NovaService } from '../../../services';
 
 export class NovaController extends RestController {
-  constructor(private openstackService: OpenstackService) {
+  constructor(private novaService: NovaService) {
     super();
   }
 
-  private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+  private static LOGGER: Logger = LoggerFactory.getLogger();
   
-  proxyRequest(req, res, next): Promise<any> {
-    return this.openstackService.proxyRequest(req)
+  proxyRequest(req, res): Promise<any> {
+    return this.novaService.checkEndpointId(req.headers['endpoint-id'])
+      .then(() => {
+        return this.novaService.callServiceApi(req);
+      })
       .then((result) => {
         this.forwardResponse(res, result.body, result.statusCode);
       });

@@ -27,7 +27,7 @@ export class LoggerFactory {
         };
 
         if (!LoggerFactory.logger) {
-            const logLevel = process.env['LOG_LEVEL'];
+            const logLevel = process.env.LOG_LEVEL;
             LoggerFactory.logger = new winston.Logger({
                 colors: LoggerFactory.customColors,
                 transports: [

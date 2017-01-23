@@ -10,4 +10,8 @@ export * from './nova/nova-controller'
 export * from './nova/nova-router'
 export * from './plugin/plugin-router'
 export * from './plugin/plugin-controller'
+export * from './swift/swift-controller'
+export * from './swift/swift-router'
+export * from './monitoring/monitoring-router'
+export * from './monitoring/monitoring-controller'
 

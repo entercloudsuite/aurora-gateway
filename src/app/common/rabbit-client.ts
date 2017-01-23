@@ -2,17 +2,21 @@ import rabbit = require('rabbot');
 import { AMQPTopology } from '../config';
 import { Logger, LoggerFactory, InternalError } from '../common';
 
-export class Publisher {
-  private rabbitConnection = rabbit;
+class RabbitClient {
+  public rabbitConnection = rabbit;
   public monitoringExchangeName = AMQPTopology.monitoringExchangeName;
-  
-  private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+  public messageTypes = AMQPTopology.messageTypes;
+  private static LOGGER: Logger = LoggerFactory.getLogger();
+
+
   constructor() {
+    // TODO - For some reasone connection crashes when sending
+    // config parameters as variables
     const amqpConfig: AMQPTopology = new AMQPTopology({
-      user: 'guest',
-      pass: 'guest',
-      server: [ '127.0.0.1' ],
-      port: 5672,
+      user: process.env.RABBIT_USER,
+      pass: process.env.RABBIT_PASSWORD,
+      server: [ process.env.RABBIT_HOST ],
+      port: process.env.RABBIT_PORT,
       vhost: '%2f',
       timeout: 1000,
       failAfter: 30,
@@ -21,10 +25,11 @@ export class Publisher {
 
     amqpConfig.createTopology(this.rabbitConnection)
       .then(() => {
-        Publisher.LOGGER.info('Successfully initialized RabbitMQ connection');
-    })
+        RabbitClient.LOGGER.info('Successfully initialized RabbitMQ connection');
+      })
       .catch((error) => {
-        Publisher.LOGGER.error('Error while trying to connect to RabbitMQ');
+        RabbitClient.LOGGER.error('Error while trying to connect to RabbitMQ');
+        RabbitClient.LOGGER.error(error);
         throw new InternalError(error);
       });
   }
@@ -37,3 +42,5 @@ export class Publisher {
     });
   }
 }
+
+export let Publisher = new RabbitClient();

@@ -28,9 +28,18 @@ export class OpenstackUtils {
     return new Promise((resolve, reject) => {
       if (APIResponse.statusCode < 200 || APIResponse.statusCode > 299) {
         // In some cases OpenStack APIs return an html in case of error
-        let OSApiError = {};
+        let OSApiError = {error: {}};
         try {
           OSApiError = JSON.parse(APIResponse.body);
+          if (!OSApiError.error) {
+            OSApiError = {
+              'error': {
+                'message': OSApiError,
+                'code': APIResponse.statusCode,
+                'title': 'OpenStack API error'
+              }
+            };
+          }
         } catch (e) {
           OSApiError = {
             'error': {

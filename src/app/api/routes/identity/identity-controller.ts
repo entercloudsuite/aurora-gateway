@@ -1,12 +1,12 @@
-import {Logger, LoggerFactory, RestController} from '../../../common';
-import {IdentityService, OpenstackService} from '../../../services';
+import { EventEmitter, Logger, LoggerFactory, RestController } from '../../../common';
+import { IdentityService } from '../../../services';
 
 export class IdentityController extends RestController {
-  constructor(private identityService: IdentityService, private openstackService: OpenstackService) {
+  constructor(private identityService: IdentityService) {
     super();
   }
 
-  private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+  private static LOGGER: Logger = LoggerFactory.getLogger();
 
   listVersions(req, res, next): Promise<any> {
     IdentityController.LOGGER.debug('Listing Openstack API Versions');
@@ -22,7 +22,11 @@ export class IdentityController extends RestController {
       .then((result) => {
         req.session.token = result.body.access.token.id;
         req.session.username = req.body['username'];
-        this.openstackService.updateServiceCatalog(result.body.access.serviceCatalog);
+        EventEmitter.eventEmitter.emit(
+          EventEmitter.NEW_SERVICE_CATALOG,
+          result.body.access.serviceCatalog
+        );
+        
         return this.forwardResponse(res, result.body, result.statusCode);
       });
   };
@@ -37,7 +41,7 @@ export class IdentityController extends RestController {
   };
 
   getServiceCatalog(req, res, next): Promise<any> {
-    return this.openstackService.getServiceCatalog()
+    return this.identityService.getServiceCatalog()
       .then(result => {
         return this.respond(res, result);
       })

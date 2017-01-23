@@ -12,10 +12,11 @@ export class PluginRouter extends RestRouter {
   }
 
   initRoutes() {
-   // this.router.get('/', this.wrapRouteFn(this.pluginController, this.pluginController.listRegisteredPlugins));
-    this.router.post('/', this.wrapRouteFn(this.pluginController, this.pluginController.registerPlugin));
-   // this.router.get('/extensions', this.wrapRouteFn(this.pluginController, this.pluginController.removePlugin));
-  //  this.router.get('/tenants', this.wrapRouteFn(this.pluginController, this.pluginController.getPluginStatus));
+    this.router.get('/', this.wrapRouteFn(this.pluginController, this.pluginController.listRegisteredPlugins));
+    this.router.get('/:pluginId', this.wrapRouteFn(this.pluginController, this.pluginController.listRegisteredPlugins));
+    this.router.post('/', this.wrapRouteFn(this.pluginController, this.pluginController.addPlugin));
+    this.router.put('/:pluginId', this.wrapRouteFn(this.pluginController, this.pluginController.editPlugin));
+    this.router.delete('/', this.wrapRouteFn(this.pluginController, this.pluginController.removePlugin));
     this.router.all('/', this.wrapRouteFn(this.pluginController, this.pluginController.throwMethodNotAllowedError));
   }
 }

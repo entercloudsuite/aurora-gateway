@@ -1,4 +1,4 @@
-import { RestController, Logger, LoggerFactory } from '../../../common';
+import { RestController, Logger, LoggerFactory, Publisher } from '../../../common';
 import { PluginManager } from '../../../services';
 
 export class PluginController extends RestController {
@@ -6,12 +6,33 @@ export class PluginController extends RestController {
     super();
   }
 
-  private static readonly LOGGER: Logger = LoggerFactory.getLogger();
+  private static LOGGER: Logger = LoggerFactory.getLogger();
 
-  registerPlugin(req, res, next): Promise<any> {
-    return this.pluginManager.registerPlugin(req.body)
+  addPlugin(req, res): Promise<any> {
+    return this.pluginManager.registerPlugin(Publisher.messageTypes.ADD, req.body)
       .then((result) => {
         return this.respond(res, result);
     });
+  }
+  
+  editPlugin(req, res): Promise<any> {
+    return this.pluginManager.registerPlugin(Publisher.messageTypes.UPDATE, req.body)
+      .then((result) => {
+        return this.respond(res, result);
+      });
+  }
+
+  removePlugin(req, res): Promise<any> {
+    return this.pluginManager.registerPlugin(Publisher.messageTypes.DELETE, req.body)
+      .then((result) => {
+        return this.respond(res, result);
+      });
+  }
+
+  listRegisteredPlugins(req, res): Promise<any> {
+    return this.pluginManager.listPlugins()
+      .then((result) => {
+        this.respond(res, result);
+      });
   }
 }
