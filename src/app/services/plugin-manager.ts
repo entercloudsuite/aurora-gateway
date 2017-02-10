@@ -5,6 +5,7 @@ export class PluginManager {
   private static LOGGER: Logger = LoggerFactory.getLogger();
 
   constructor() {
+    
   }
 
   registerPlugin(type: string, options: any, pluginId?: string): Promise<any> {

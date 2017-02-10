@@ -39,6 +39,7 @@
     "dotenv": "^2.0.0",
     "express": "4.14.0",
     "morgan": "1.7.0",
+    "object-hash": "^1.1.5",
     "rabbot": "^1.0.8",
     "redis": "^2.6.5",
     "request": "^2.79.0",

@@ -2,10 +2,12 @@ import { Express, Router, RequestHandler, ErrorRequestHandler } from 'express';
 import express = require('express');
 import bodyParser = require('body-parser');
 import morgan = require('morgan');
-import { Logger, LoggerFactory, RedisClient } from './common';
+import { Logger, LoggerFactory, RedisClient, MessageHandler } from './common';
 import expressSession = require('express-session');
 import cors = require('cors');
 import connectRedis = require('connect-redis');
+import { RabbitClient } from './common';
+import { ApiRouterFactory } from './api';
 
 export class ExpressAppFactory {
 
@@ -69,6 +71,15 @@ export class ExpressAppFactory {
 
     app.use('/api', apiRouter);
 
+    
+    app.post('/register', (req, res, next) => {
+      ExpressAppFactory.LOGGER.debug(`Mounting new route - ${JSON.stringify(req.body)}`)
+      const newRouter = ApiRouterFactory.registerNewAPI(req.body.routingPath, req.body.name);
+      app.use(req.body.routingPath, newRouter);
+    
+      res.json({'info': 'successfully registered new route'});
+    });
+    
     if (postApiRouterMiddlewareFns != null) {
       postApiRouterMiddlewareFns.forEach((middlewareFn) => app.use(middlewareFn));
     }

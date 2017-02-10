@@ -9,7 +9,7 @@ export abstract class RestRouter {
     this.router = express.Router({mergeParams: true});
   }
 
-  abstract initRoutes();
+  abstract initRoutes(serviceName?: string);
 
   wrapParamFn(controller: RestController, handlerFn: Function) {
     return (req, res, next, param) => {

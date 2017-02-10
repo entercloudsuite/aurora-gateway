@@ -1,16 +1,8 @@
 import express = require('express');
 import { Router } from 'express';
-import { 
-  SwiftRouter, IdentityRouter, NovaRouter, PluginRouter, 
-  NeutronRouter, GlanceRouter, CinderRouter, MonitoringRouter 
-} from './routes';
 import { Logger, LoggerFactory, InvalidResourceUrlError } from '../common';
-import {
-  NovaService, NeutronService, CinderService, GlanceService, SwiftService,
-  OpenstackService, IdentityService, PluginManager, MonitoringService
-} from '../services';
-import { EventEmitter } from '../common';
-import { RouterUtils } from '../utils';
+import { GatewayRouter } from './routes';
+import { GatewayService } from '../services';
 
 export class ApiRouterFactory {
 
@@ -18,53 +10,29 @@ export class ApiRouterFactory {
 
   private constructor() {}
 
-  static getApiRouter(openstackService: OpenstackService): Router {
+  static getApiRouter(): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
 
-    const identityService = new IdentityService(
-      openstackService.keystoneApiHost, openstackService.keystoneApiPort, 
-      openstackService.keystoneApiPath, openstackService.keystoneApiVersion
-    );
-    const pluginManager = new PluginManager();
-    const monitoringService = new MonitoringService();
-    const novaService = new NovaService();
-    const neutronService = new NeutronService();
-    const glanceService = new GlanceService();
-    const cinderService = new CinderService();
-    const swiftService = new SwiftService();
-
-    EventEmitter.serviceInstances = {
-      nova: novaService,
-      neutron: neutronService,
-      glance: glanceService,
-      cinder: cinderService,
-      keystone: identityService,
-      monitoring: monitoringService,
-      swift: swiftService
-    };
-
-    const identityRouter: Router = new IdentityRouter(identityService).router;
-    const novaRouter: Router = new NovaRouter(novaService).router;
-    const neutronRouter: Router = new NeutronRouter(neutronService).router;
-    const cinderRouter: Router = new CinderRouter(cinderService).router;
-    const glanceRouter: Router = new GlanceRouter(glanceService).router;
-    const swiftRouter: Router = new SwiftRouter(swiftService).router;
-    const pluginRouter: Router = new PluginRouter(pluginManager).router;
-    const monitoringRouter: Router = new MonitoringRouter(monitoringService).router;
-    
     ApiRouterFactory.LOGGER.info('Mounting routes');
-    apiRouter.use('/identity', identityRouter);
-    apiRouter.use('/nova', RouterUtils.isAuthenticated, novaRouter);
-    apiRouter.use('/cinder', RouterUtils.isAuthenticated, cinderRouter);
-    apiRouter.use('/neutron', RouterUtils.isAuthenticated, neutronRouter);
-    apiRouter.use('/glance', RouterUtils.isAuthenticated, glanceRouter);
-    apiRouter.use('/plugins', RouterUtils.isAuthenticated, pluginRouter);
-    apiRouter.use('/swift', RouterUtils.isAuthenticated, swiftRouter);
-    apiRouter.use('/ceilometer', RouterUtils.isAuthenticated, monitoringRouter);
+    apiRouter.get('/', (req, res) => {
+      res.json({ 'Aurora-Gateway': 'Test Request');
+    });
     apiRouter.all('*', (req, res, next) => {
       next(new InvalidResourceUrlError());
     });
 
+    return apiRouter;
+  }
+  
+  static registerNewAPI(newAPIPath: string, serviceName: string): Router {
+    const apiRouter: Router = express.Router({ mergeParams: true });
+    
+    const gatewayService = new GatewayService(serviceName);
+    const gatewayRouter: Router  = new GatewayRouter(gatewayService).router;
+    
+    ApiRouterFactory.LOGGER.info(`Registering new route on ${newAPIPath} for ${serviceName}`);
+
+    apiRouter.use('/', gatewayRouter);
     return apiRouter;
   }
 }

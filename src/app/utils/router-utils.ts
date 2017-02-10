@@ -1,5 +1,4 @@
 import { InvalidJsonError, NotAuthenticated, ApiError } from '../common';
-
 export class RouterUtils {
   static isAuthenticated(req, res, next): any {
     if (req.session.token) {
@@ -35,5 +34,9 @@ export class RouterUtils {
       res.statusCode = 400;
       res.json(new ApiError('Missing Endpoint-ID header', 400, 'BAD_REQUEST'));
     }
+  }
+
+  static parsePluginRequest(req, res, next): any {
+    next(req);
   }
 }

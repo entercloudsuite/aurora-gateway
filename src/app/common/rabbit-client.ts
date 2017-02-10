@@ -2,16 +2,14 @@ import rabbit = require('rabbot');
 import { AMQPTopology } from '../config';
 import { Logger, LoggerFactory, InternalError } from '../common';
 
-class RabbitClient {
+export class RabbitClient {
   public rabbitConnection = rabbit;
-  public monitoringExchangeName = AMQPTopology.monitoringExchangeName;
+  public generalExchangeName = AMQPTopology.GENERAL_EXCHANGE;
   public messageTypes = AMQPTopology.messageTypes;
   private static LOGGER: Logger = LoggerFactory.getLogger();
 
 
-  constructor() {
-    // TODO - For some reasone connection crashes when sending
-    // config parameters as variables
+  constructor(queueName: string) {
     const amqpConfig: AMQPTopology = new AMQPTopology({
       user: process.env.RABBIT_USER,
       pass: process.env.RABBIT_PASSWORD,
@@ -26,6 +24,7 @@ class RabbitClient {
     amqpConfig.createTopology(this.rabbitConnection)
       .then(() => {
         RabbitClient.LOGGER.info('Successfully initialized RabbitMQ connection');
+        this.rabbitConnection.startSubscription(queueName);
       })
       .catch((error) => {
         RabbitClient.LOGGER.error('Error while trying to connect to RabbitMQ');
@@ -42,5 +41,3 @@ class RabbitClient {
     });
   }
 }
-
-export let Publisher = new RabbitClient();

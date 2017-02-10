@@ -6,9 +6,8 @@ export class AMQPTopology {
 
   public static monitoringExchangeName = 'aurora-monitoring-requests-x';
   public static messageTypes = {
-    ADD: 'add',
-    DELETE: 'delete',
-    UPDATE: 'update'
+    NEW_SERVICE: 'NEW_SERVICE',
+    REMOVE_SERVICE: 'REMOVE_SERVICE'
   };
   
   constructor(connection) {
@@ -16,12 +15,12 @@ export class AMQPTopology {
     
     this.exchanges = [
       {
-        name: 'aurora-monitoring-requests-x',
+        name: 'aurora-general-x',
         type: 'direct',
         autoDelete: 'true'
       },
       {
-        name: 'aurora-monitoring-messages-x',
+        name: 'aurora-services-x',
         type: 'fanout',
         autoDelete: 'true'
       }
@@ -29,24 +28,24 @@ export class AMQPTopology {
     
     this.queues = [
       {
-        name: 'aurora-monitoring-requests-q',
+        name: 'aurora-general',
         autoDelete: true,
       },
       {
-        name: 'aurora-monitoring-messages-q',
+        name: 'aurora-services',
         autoDelete: true,
       }
     ];
     
     this.bindings = [
       {
-        exchange: 'aurora-monitoring-requests-x',
-        target: 'aurora-monitoring-requests-q',
-        keys: ['monitoring']
+        exchange: 'aurora-general-x',
+        target: 'aurora-general',
+        keys: []
       },
       {
-        exchange: 'aurora-monitoring-messages-x',
-        target: 'aurora-monitoring-messages-q',
+        exchange: 'aurora-services-x',
+        target: 'aurora-services',
         keys: []
       }
     ];
