@@ -2,12 +2,13 @@ import { Logger, LoggerFactory, RabbitClient, Stack, ResourceNotFoundError } fro
 import { ServiceModel } from '../models';
 import objectHash = require('object-hash');
 import http = require('http');
+import { Topology } from '../config';
 
 export class ServiceManager {
   public serviceTable: {};
   private serviceStacks: {};
   private lastUsedService: {};
-  private generalQueue: RabbitClient;
+  private rabbitClient: RabbitClient;
   
   private static LOGGER: Logger = LoggerFactory.getLogger();
   
@@ -15,7 +16,7 @@ export class ServiceManager {
     this.serviceTable = {};
     this.serviceStacks = {};
     this.lastUsedService = {};
-    this.generalQueue = new RabbitClient('aurora-general');
+    this.rabbitClient = new RabbitClient(Topology.EXCHANGES.generalExchange, Topology.QUEUES.general);
     this.registerHandlers();
   }
 
@@ -49,8 +50,8 @@ export class ServiceManager {
   registerHandlers() {
     ServiceManager.updateStatus.bind(this);
     
-    this.generalQueue.rabbitConnection.handle(
-      this.generalQueue.messageTypes.SERVICE_UPDATE,
+    this.rabbitClient.rabbitConnection.handle(
+      Topology.MESSAGES.newService,
       ServiceManager.updateStatus
     );
   }
@@ -109,7 +110,7 @@ export class ServiceManager {
   }
 
   updateStack(serviceName: string, serviceId: string) {
-    ServiceManager.LOGGER.debug(`Updating stack ${serviceName} with ${serviceId}`)
+    ServiceManager.LOGGER.debug(`Updating stack ${serviceName} with ${serviceId}`);
     if (!(serviceName in Object.keys(this.serviceStacks))) {
       this.serviceStacks[serviceName] = new Stack();
     }

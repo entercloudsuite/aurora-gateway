@@ -13,8 +13,10 @@ export class LoggerFactory {
         crit: 'red',
         fatal: 'red'
     };
-    private constructor() {}
 
+    constructor() {}
+
+  
     static getLogger(): LoggerInstance {
         if (!fs.existsSync('./logs')) {
             fs.mkdir('./logs');

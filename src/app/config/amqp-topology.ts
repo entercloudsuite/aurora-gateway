@@ -1,54 +1,56 @@
-export class AMQPTopology {
-  private connection: {};
-  private exchanges: [{}];
-  private queues: [{}];
-  private bindings: [{}];
+import config = require('../../../topology');
+import { Logger, LoggerFactory } from '../common';
 
-  public static monitoringExchangeName = 'aurora-monitoring-requests-x';
-  public static messageTypes = {
-    NEW_SERVICE: 'NEW_SERVICE',
-    REMOVE_SERVICE: 'REMOVE_SERVICE'
-  };
-  
-  constructor(connection) {
-    this.connection = connection;
-    
-    this.exchanges = [
-      {
-        name: 'aurora-general-x',
-        type: 'direct',
-        autoDelete: 'true'
-      },
-      {
-        name: 'aurora-services-x',
-        type: 'fanout',
-        autoDelete: 'true'
-      }
-    ];
-    
-    this.queues = [
-      {
-        name: 'aurora-general',
-        autoDelete: true,
-      },
-      {
-        name: 'aurora-services',
-        autoDelete: true,
-      }
-    ];
-    
-    this.bindings = [
-      {
-        exchange: 'aurora-general-x',
-        target: 'aurora-general',
-        keys: []
-      },
-      {
-        exchange: 'aurora-services-x',
-        target: 'aurora-services',
-        keys: []
-      }
-    ];
+class AMQPTopology {
+  private connection: {};
+  private exchanges = [];
+  private queues = [];
+  private bindings = [];
+
+  public EXCHANGES = {};
+  public QUEUES = {};
+  public MESSAGES = {};
+
+  public static LOGGER: Logger = LoggerFactory.getLogger();
+
+  constructor() {
+    this.connection = {
+      user: process.env.RABBIT_USER,
+      pass: process.env.RABBIT_PASSWORD,
+      server: [ process.env.RABBIT_HOST ],
+      port: process.env.RABBIT_PORT,
+      vhost: '%2f',
+      timeout: 1000,
+      failAfter: 30,
+      retryLimit: 400
+    };
+
+    Object.keys(config.exchanges).forEach(exchange => {
+      this.EXCHANGES[exchange] = config.exchanges[exchange].name;
+      this.exchanges.push({
+        name: config.exchanges[exchange].name,
+        type: config.exchanges[exchange].type,
+        autoDelete: true
+      });
+    });
+
+    Object.keys(config.queues).forEach(queue => {
+      this.QUEUES[queue] = config.queues[queue];
+      this.queues.push({
+        name: config.queues[queue],
+        autoDelete: true
+      });
+    });
+
+    Object.keys(config.bindings).forEach(queueName => {
+      this.bindings.push({
+        exchange: config.bindings[queueName][0],
+        target: queueName,
+        keys: config.bindings[queueName][1]
+      });
+    });
+
+    this.MESSAGES = config.messages;
   }
 
   createTopology(rabbit): any {
@@ -60,3 +62,5 @@ export class AMQPTopology {
     });
   }
 }
+
+export const Topology = new AMQPTopology();

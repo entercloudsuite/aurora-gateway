@@ -17,7 +17,6 @@ const errorMiddleware = [
 ];
 
 const app: Express = ExpressAppFactory.getExpressApp(apiRouter, null, errorMiddleware);
-
 //
 // app.on('NEW_SERVICE', message => {
 //   ExpressAppFactory.LOGGER.debug(`Added new route for service - ${JSON.stringify(message.body)}`);

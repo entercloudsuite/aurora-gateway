@@ -15,7 +15,7 @@ export class ApiRouterFactory {
 
     ApiRouterFactory.LOGGER.info('Mounting routes');
     apiRouter.get('/', (req, res) => {
-      res.json({ 'Aurora-Gateway': 'Test Request');
+      res.json({ 'Aurora-Gateway': 'Test Request'});
     });
     apiRouter.all('*', (req, res, next) => {
       next(new InvalidResourceUrlError());

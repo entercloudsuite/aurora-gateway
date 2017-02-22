@@ -6,5 +6,5 @@ export class ValidatorError {
     public message: string
   ) {}
 
-  static readonly REQUIRED_VALIDATOR: string = 'required';
+  static REQUIRED_VALIDATOR: string = 'required';
 }

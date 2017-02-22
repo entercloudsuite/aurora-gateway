@@ -10,7 +10,7 @@ export class RestController {
   }
 
   forwardResponse(res: Response,  data: any, statusCode: number = 200): Response {
-    return res.status(statusCode).json(data);
+    return res.status(statusCode).send(data);
   }
   
   respondNoContent(res: Response, statusCode: number = 204): Response {

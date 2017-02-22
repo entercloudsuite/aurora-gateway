@@ -62,7 +62,10 @@ export class GatewayService {
       port: process.env.REGISTRY_PORT,
       path: '/service',
       headers: { 'Service-Name': this.serviceName }
-    });
+    })
+      .then(serviceManagerResponse => {
+        return Promise.resolve(JSON.parse(serviceManagerResponse.body));
+      });
   }
   
   callService(incomingRequest, serviceHost, servicePort, apiPath): Promise<any> {

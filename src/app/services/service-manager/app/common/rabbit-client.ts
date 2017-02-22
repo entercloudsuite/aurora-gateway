@@ -1,27 +1,19 @@
 import rabbit = require('rabbot');
-import { AMQPTopology } from '../config';
+import { Topology } from '../config';
 import { Logger, LoggerFactory, InternalError } from './';
 
 export class RabbitClient {
   public rabbitConnection = rabbit;
-  public generalExchange = AMQPTopology.GENERAL_EXCHANGE;
-  public messageTypes = AMQPTopology.messageTypes;
   private static LOGGER: Logger = LoggerFactory.getLogger();
+  private exchangeName: string;
 
+  public static LOGGER: Logger = LoggerFactory.getLogger();
+  constructor(exchangeName: string, queueName: string) {
+    RabbitClient.LOGGER.debug(`Exchange ${exchangeName}`);
+    RabbitClient.LOGGER.debug(`Queue ${queueName}`);
+    this.exchangeName = exchangeName;
 
-  constructor(queueName: string) {
-    const amqpConfig: AMQPTopology = new AMQPTopology({
-      user: process.env.RABBIT_USER,
-      pass: process.env.RABBIT_PASSWORD,
-      server: [ process.env.RABBIT_HOST ],
-      port: process.env.RABBIT_PORT,
-      vhost: '%2f',
-      timeout: 1000,
-      failAfter: 30,
-      retryLimit: 400
-    });
-
-    amqpConfig.createTopology(this.rabbitConnection)
+    Topology.createTopology(this.rabbitConnection)
       .then(() => {
         RabbitClient.LOGGER.info('Successfully initialized RabbitMQ connection');
         this.rabbitConnection.startSubscription(queueName);
@@ -33,8 +25,9 @@ export class RabbitClient {
       });
   }
 
-  publishMessage(exchangeName: string, type: string, routingKey: string, message: any): Promise<any> {
-    return this.rabbitConnection.publish(exchangeName, {
+  publishMessage(type: string, routingKey: string, message: any): Promise<any> {
+    RabbitClient.LOGGER.debug(`Publishing message - ${JSON.stringify(message)} on ${this.exchangeName}`);
+    return this.rabbitConnection.publish(this.exchangeName, {
       type: type,
       routingKey: routingKey,
       body: message

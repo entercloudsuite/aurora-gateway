@@ -3,7 +3,7 @@ import { ApiError, InvalidJsonError, InternalError } from '../errors';
 import { Logger, LoggerFactory } from '../../logging';
 
 export class RestErrorMiddleware {
-  public static readonly LOGGER: Logger = LoggerFactory.getLogger();
+  public static LOGGER: Logger = LoggerFactory.getLogger();
 
   // Error handling middleware that takes an incoming error, normalizes it to some
   // subclass of HttpError and passes it along (to eventually be logged/serialized)
