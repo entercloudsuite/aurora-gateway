@@ -17,8 +17,7 @@ export class SwiftService extends OpenstackAPIModel {
       clientRequest.headers['endpoint-id'],
       clientRequest.method,
       clientRequest.url,
-      clientRequest.headers,
-      clientRequest.body
+      clientRequest.headers
     );
   }
 }

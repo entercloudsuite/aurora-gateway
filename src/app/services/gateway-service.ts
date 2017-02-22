@@ -1,5 +1,6 @@
 import { Logger, LoggerFactory, InternalError } from '../common';
 import http = require('http');
+import { ServiceUtils } from '../utils';
 
 export class GatewayService {
   public serviceName: string;
@@ -11,49 +12,17 @@ export class GatewayService {
   private static LOGGER: Logger = LoggerFactory.getLogger();
 
   static sendRequest(options): Promise<any> {
-    let requestBody = '';
     let requestOptions = {
       protocol: 'http:' || options.protocol,
       host: options.host,
       port: options.port,
       path: options.path,
       method: options.method || 'GET',
-      headers: options.headers || {}
+      headers: options.headers
     };
 
-    requestOptions.headers['Content-Type'] = 'application/json';
-    if (options.body) {
-      requestBody = JSON.stringify(options.body);
-      requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody);
-    }
-
-    GatewayService.LOGGER.debug(`New request - ${JSON.stringify(requestOptions)}`);
-    return new Promise((resolve, reject) => {
-      let responseBody: string = '';
-      const openstackRequest = http.request(requestOptions, (res) => {
-        res.setEncoding('utf8');
-        res.on('data', chunk => {
-          GatewayService.LOGGER.debug(`Response body - ${chunk}`);
-          responseBody += chunk;
-        });
-
-        res.on('end', () => {
-          res['body'] = responseBody;
-          return resolve(res);
-        });
-      });
-
-      openstackRequest.on('error', (requestError) => {
-        GatewayService.LOGGER.error(`Request error - ${JSON.stringify(requestError)}`);
-        return reject(new InternalError(requestError));
-      });
-
-      if (requestBody) {
-        openstackRequest.write(requestBody);
-      }
-
-      openstackRequest.end();
-    });
+    options.headers['Content-Type'] = 'application/json';
+    return ServiceUtils.sendRequest(requestOptions, options.body);
   };
 
   callServiceManager(): Promise<any> {
@@ -69,6 +38,9 @@ export class GatewayService {
   }
   
   callService(incomingRequest, serviceHost, servicePort, apiPath): Promise<any> {
+    GatewayService.LOGGER.info(`Calling ${serviceHost}, on ${incomingRequest.path})}`);
+    GatewayService.LOGGER.info(`Request headers - ${JSON.stringify(incomingRequest.headers)})}`);
+    GatewayService.LOGGER.info(`Request body - ${JSON.stringify(incomingRequest.body)})}`);
     return GatewayService.sendRequest({
       host: serviceHost,
       port: servicePort,

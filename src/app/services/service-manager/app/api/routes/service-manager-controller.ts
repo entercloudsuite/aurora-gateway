@@ -1,6 +1,6 @@
 import { Logger, LoggerFactory, RestController } from '../../common';
 import { ServiceManager } from '../../services';
-import { Utils } from '../../utils';
+import { ServiceUtils } from '../../utils';
 
 export class ServiceManagerController extends RestController {
   constructor(private serviceManager: ServiceManager) {
@@ -10,7 +10,7 @@ export class ServiceManagerController extends RestController {
   private static LOGGER: Logger = LoggerFactory.getLogger();
 
   registerService(req, res, next): Promise<any> {
-    return Utils.getIPAddress(req)
+    return ServiceUtils.getIPAddress(req)
       .then(ipAddress => {
         let options = req.body;
         options['host'] = ipAddress;

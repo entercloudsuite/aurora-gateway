@@ -1,6 +1,7 @@
 import http = require('http');
 import request = require('request');
 import { Logger, LoggerFactory, InternalError, ApiError, EventEmitter } from '../common';
+import { ServiceUtils } from '../utils';
 import util = require('util');
 import url = require('url');
 
@@ -24,18 +25,28 @@ export class OpenstackService {
     });
   }
   
-  static callOSApi(options): Promise<any> {
-    return OpenstackService.sendRequest(options)
+  static callOSApi(options: {}, body?: any): Promise<any> {
+    const requestOptions = {
+      protocol: options.protocol || 'http:',
+      host: options.host,
+      port: options.port,
+      path: options.path,
+      method: options.method || 'GET',
+      headers: options.headers || {'Content-Type': 'application/json'}
+    };
+    
+    OpenstackService.LOGGER.debug(`Calling OpenStack service with ${JSON.stringify(requestOptions)}`);
+    return ServiceUtils.sendRequest(requestOptions, body)
       .then(APIResponse => {
-        OpenstackService.LOGGER.info(`Original OpenStack API Response - ${JSON.stringify(APIResponse.body)}`);
+        // OpenstackService.LOGGER.info(`Original OpenStack API Response - ${JSON.stringify(APIResponse.body)}`);
         return OpenstackService.parseApiResponse(APIResponse);
       })
       .then(parsedResponse => {
-        OpenstackService.LOGGER.info(`Parsed OpenStack API Response - ${JSON.stringify(parsedResponse.body)}`);
+        OpenstackService.LOGGER.debug(`Parsed OpenStack API Response - ${JSON.stringify(parsedResponse.body)}`);
         return Promise.resolve(parsedResponse);
       })
       .catch(OSRequestError => {
-        OpenstackService.LOGGER.info(`Error occurred while trying to call OpenStack API - ${JSON.stringify(OSRequestError)}`);
+        OpenstackService.LOGGER.error(`Error occurred while trying to call OpenStack API - ${JSON.stringify(OSRequestError)}`);
         return Promise.reject(OSRequestError);
       });
   }
@@ -76,51 +87,5 @@ export class OpenstackService {
       }
     });
   }
-
-  static  sendRequest(options): Promise<any> {
-    let requestBody = '';
-    let requestOptions = {
-      protocol: 'http:' || options.protocol,
-      host: options.host,
-      port: options.port,
-      path: options.path,
-      method: options.method || 'GET',
-      headers: options.headers || {}
-    };
-
-    requestOptions.headers['Content-Type'] = 'application/json';
-    if (options.body) {
-      requestBody = JSON.stringify(options.body);
-      requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody);
-    }
-
-    OpenstackService.LOGGER.debug(`Calling OpenStack API with ${JSON.stringify(requestOptions)}`);
-    return new Promise((resolve, reject) => {
-      let responseBody: string = '';
-      const openstackRequest = http.request(requestOptions, (res) => {
-        res.setEncoding('utf8');
-        res.on('data', chunk => {
-          OpenstackService.LOGGER.debug(`Response body - ${chunk}`);
-          responseBody += chunk;
-        });
-
-        res.on('end', () => {
-          res['body'] = responseBody;
-          return resolve(res);
-        });
-      });
-      
-      openstackRequest.on('error', (requestError) => {
-        OpenstackService.LOGGER.error(`Request error - ${JSON.stringify(requestError)}`);
-        return reject(new InternalError(requestError));
-      });
-
-      if (requestBody) {
-        openstackRequest.write(requestBody);
-      }
-
-      openstackRequest.end();
-    });
-  };
 }
 

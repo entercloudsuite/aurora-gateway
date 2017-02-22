@@ -60,13 +60,15 @@ export class OpenstackAPIModel {
   }
   
   callServiceApi(endpointId: string, method: string, path: string, headers: {}, body: {}): Promise<any> {
-    return OpenstackService.callOSApi({
+    const requestOptions = {
+      protocol: 'http:',
       host: this.endpoints[endpointId].host,
       port: this.endpoints[endpointId].port,
       path: this.endpoints[endpointId].path + path,
       method: method,
       headers: headers,
-      body: body
-    });
+    };
+    
+    return OpenstackService.callOSApi(requestOptions, body);
   }
 }

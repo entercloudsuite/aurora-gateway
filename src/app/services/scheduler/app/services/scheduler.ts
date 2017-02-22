@@ -80,13 +80,14 @@ export class IdentityService extends OpenstackAPIModel {
 
   getToken(credentials: {}): Promise<any> {
     // TODO: Abstract endpoint for different API versions
-    OpenstackAPIModel.LOGGER.debug(`Requesting token from Keystone on - ${JSON.stringify(credentials)}`);
+    OpenstackAPIModel.LOGGER.debug('Requesting token from Keystone');
     return OpenstackService.callOSApi( {
       path: this.apiPath + '/tokens',
       port: this.apiPort,
       host: this.apiHost,
+      body: credentials,
       method: 'POST'
-    }, credentials);
+    });
   }
 
   getServiceCatalog(authObj?: {}): Promise<any> {

@@ -2,10 +2,10 @@ export class ServiceModel {
   public host: string;
   public port: string;
   public name: string;
-  public status: string;
+  public status = 'READY';
   public routingPath: string;
   public apiPath: string;
-  public lastUpdate: string;
+  public lastUpdate: any;
   
   constructor(host: string, port: string, name: string, status: string, routingPath: string, apiPath: string) {
     this.host = host;

@@ -3,6 +3,7 @@ import { ServiceModel } from '../models';
 import objectHash = require('object-hash');
 import http = require('http');
 import { Topology } from '../config';
+import { ServiceUtils } from '../utils';
 
 export class ServiceManager {
   public serviceTable: {};
@@ -24,7 +25,7 @@ export class ServiceManager {
     ServiceManager.LOGGER.info(`Registering new service - ${JSON.stringify(serviceOptions)}`);
     const newService = new ServiceModel(
       serviceOptions.host, serviceOptions.port, serviceOptions.name,
-      serviceOptions.status, serviceOptions.routingPath, serviceOptions.apiPath
+      'READY', serviceOptions.routingPath, serviceOptions.apiPath
     );
     
     const serviceId = objectHash(newService);
@@ -39,10 +40,9 @@ export class ServiceManager {
       // );
       this.notifyGateway(newService);
     }
-
-    if (serviceOptions.status === 'READY') {
-      this.updateStack(serviceOptions.name, serviceId);
-    }
+    
+    this.updateStack(serviceOptions.name, serviceId);
+    
 
     return Promise.resolve(serviceId);
   }
@@ -57,47 +57,23 @@ export class ServiceManager {
   }
 
   notifyGateway(newService) {
-    const requestBody = JSON.stringify({
-      host: newService.host,
-      routingPath: newService.routingPath,
-      name: newService.name
-    });
-
     const requestOptions = {
       protocol: 'http:',
       host: '127.0.0.1',
       port: '3000',
       path: '/register',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(requestBody)
-      }
+      headers: { 'Content-Type': 'application/json' }
     };
     
-    ServiceManager.LOGGER.debug(`Calling gateway on new service - ${JSON.stringify(newService)}`);;
-    let responseBody = '';
-    const gatewayRequest = http.request(requestOptions, (res) => {
-      res.setEncoding('utf8');
-      res.on('data', chunk => {
-        ServiceManager.LOGGER.debug(`Response body - ${chunk}`);
-        responseBody += chunk;
-      });
+    const requestBody = {
+      host: newService.host,
+      routingPath: newService.routingPath,
+      name: newService.name
+    };
 
-      res.on('end', () => {
-        res['body'] = responseBody;
-        ServiceManager.LOGGER.debug(`Gatewawy response - ${responseBody}`);
-      });
-    });
-
-    gatewayRequest.on('error', (requestError) => {
-      ServiceManager.LOGGER.error(`Request error - ${JSON.stringify(requestError)}`);
-    });
-
-    gatewayRequest.write(requestBody);
-
-
-    gatewayRequest.end();
+    ServiceManager.LOGGER.debug(`Calling gateway on new service - ${JSON.stringify(newService)}`);
+    ServiceUtils.sendRequest(requestOptions, requestBody);
   }
 
   static updateStatus(message: any) {
@@ -119,7 +95,7 @@ export class ServiceManager {
   }
   
   getAvailableService(serviceName: string): Promise<any> {
-    ServiceManager.LOGGER.debug(`Listing available service for - ${serviceName}`);
+    ServiceManager.LOGGER.debug(`Listing avilable service for - ${serviceName}`);
     let serviceId = '';
     if (!this.serviceStacks[serviceName].isEmpty()) {
       serviceId = this.serviceStacks[serviceName].update();
