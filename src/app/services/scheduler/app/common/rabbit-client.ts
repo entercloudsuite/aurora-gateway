@@ -9,7 +9,6 @@ export class RabbitClient {
   public static LOGGER: Logger = LoggerFactory.getLogger();
   constructor(exchangeName: string, queueName: string) {
     this.exchangeName = exchangeName;
-
     Topology.createTopology(this.rabbitConnection)
       .then(() => {
         RabbitClient.LOGGER.info('Successfully initialized RabbitMQ connection');

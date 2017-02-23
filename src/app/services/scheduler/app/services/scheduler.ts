@@ -6,12 +6,10 @@ import cronParser = require('cron-parser');
 
 export class Scheduler {
   public jobs: {};
-  public schedulerManager: scheduler;
   public job: JobModel;
   public rabbitClient: RabbitClient;
 
   constructor() {
-    this.schedulerManager = scheduler;
     this.jobs = {};
     this.job = new JobModel(SQLConfig.getConnection());
     this.rabbitClient = new RabbitClient(
@@ -20,6 +18,15 @@ export class Scheduler {
   }
 
   registerMessageHandlers() {
+    Scheduler.manageRabbitMessage.bind(this);
+    this.rabbitClient.rabbitConnection.handle(
+      Topology.MESSAGES.scheduleJob,
+      Scheduler.manageRabbitMessage
+    );
+  }
+
+  static manageRabbitMessage(message) {
+    this.scheduleJob(message.body);
   }
 
   static runJob(jobId: number) {
@@ -36,7 +43,8 @@ export class Scheduler {
       })
       .then(persistedJob => {
         // TODO: Check node-scheduler package for error management
-        this.jobs[persistedJob.id] = this.schedulerManager.scheduleJob(
+        this.jobs[persistedJob.id] = scheduler.scheduleJob(
+          persistedJob.trigger,
           Scheduler.runJob.bind(this, persistedJob.jobId)
         );
         return Promise.resolve(persistedJob);
@@ -44,13 +52,11 @@ export class Scheduler {
   }
 
   updateJob(jobInfo: any): Promise<any> {
-    return this.job.dbObject.findOne({where: {id: jobInfo.jobId}})
-      .then(jobObject => {
-        return jobObject.update(jobInfo);
-      })
-      .then(() => {
+    return this.job.updateJob(jobInfo)
+      .then((updatedJob) => {
         this.jobs[jobInfo.jobId].cancel();
-        this.jobs[jobInfo.jobId] = this.schedulerManager.schedulerJob(
+        this.jobs[jobInfo.jobId] = scheduler.scheduleJob(
+          updatedJob.trigger,
           Scheduler.runJob.bind(this, jobInfo.jobid)
         );
         return Promise.resolve(jobInfo);
@@ -60,7 +66,7 @@ export class Scheduler {
   deleteJob(jobId: number): Promise<any> {
     return Promise.all([
      this.job.dbObject.destroy({where: {jobId: jobId}}),
-     this.schedulerManager[jobId].cancel()
+     this.jobs[jobId].cancel()
     ]);
   }
 

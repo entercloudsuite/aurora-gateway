@@ -25,6 +25,7 @@
     "serviceUpdate": "SERVICE_UPDATE",
     "newServiceCatalog": "NEW_SERVICE_CATALOG",
     "newTenantList": "NEW_TENANT_LIST",
-    "userAuthenticated": "USER_AUTHENTICATED"
+    "userAuthenticated": "USER_AUTHENTICATED",
+    "scheduleJob": "SCHEDULE_NEW_JOB"
   }
 }

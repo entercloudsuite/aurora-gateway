@@ -18,7 +18,6 @@ export class ApiRouterFactory {
     scheduler.registerMessageHandlers();
 
     const schedulerRouter: Router = new SchedulerRouter(scheduler).router;
-
     ApiRouterFactory.LOGGER.info('Mounting routes');
     apiRouter.use('/', schedulerRouter);
     apiRouter.all('*', (req, res, next) => {
