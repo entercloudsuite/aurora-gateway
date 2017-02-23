@@ -1,7 +1,6 @@
 import express = require('express');
 import { Router } from 'express';
 import { RestController } from './rest-controller';
-import { Subscriber } from '../rabbit-subscriber';
 
 export abstract class RestRouter {
   router: Router;
@@ -21,8 +20,6 @@ export abstract class RestRouter {
 
   wrapRouteFn(controller: RestController, handlerFn: Function) {
     return (req, res, next) => {
-      //Subscriber.notifyServices(res.status, req.path, req.body);
-      // Add callback method for notifing on different events
       return Promise.resolve(handlerFn.bind(controller)(req, res, next))
         .catch(err => next(err));
     };

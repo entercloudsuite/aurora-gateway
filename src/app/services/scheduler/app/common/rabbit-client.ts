@@ -4,7 +4,6 @@ import { Logger, LoggerFactory, InternalError } from './';
 
 export class RabbitClient {
   public rabbitConnection = rabbit;
-  private static LOGGER: Logger = LoggerFactory.getLogger();
   private exchangeName: string;
 
   public static LOGGER: Logger = LoggerFactory.getLogger();

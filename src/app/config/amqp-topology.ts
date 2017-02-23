@@ -1,14 +1,21 @@
 import config = require('../../../topology');
 import { Logger, LoggerFactory } from '../common';
 
-class AMQPTopology {
+export class AMQPTopology {
   private connection: {};
   private exchanges = [];
   private queues = [];
   private bindings = [];
 
-  public EXCHANGES = {};
-  public QUEUES = {};
+  public EXCHANGES = {
+    servicesExchange: '',
+    generalExchange: ''
+  };
+  public QUEUES = {
+    general: '',
+    servicesRequests: '',
+    servicesMessages: '',
+  };
   public MESSAGES = {};
 
   public static LOGGER: Logger = LoggerFactory.getLogger();

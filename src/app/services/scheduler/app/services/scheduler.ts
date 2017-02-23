@@ -1,4 +1,4 @@
-import { EventEmitter, RabbitClient, RabbitClient, InvalidJsonError, InternalError } from '../common';
+import { EventEmitter, RabbitClient, InvalidJsonError, InternalError } from '../common';
 import { JobModel } from '../models';
 import { Topology, SQLConfig } from '../config';
 import scheduler = require('node-schedule');
@@ -58,7 +58,7 @@ export class Scheduler {
   }
 
   deleteJob(jobId: number): Promise<any> {
-    return new Promise.all([
+    return Promise.all([
      this.job.dbObject.destroy({where: {jobId: jobId}}),
      this.schedulerManager[jobId].cancel()
     ]);

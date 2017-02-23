@@ -2,7 +2,7 @@ import { Express, Router, RequestHandler, ErrorRequestHandler } from 'express';
 import express = require('express');
 import bodyParser = require('body-parser');
 import morgan = require('morgan');
-import { Logger, LoggerFactory, RedisClient, MessageHandler } from './common';
+import { Logger, LoggerFactory, RedisClient } from './common';
 import expressSession = require('express-session');
 import cors = require('cors');
 import connectRedis = require('connect-redis');
