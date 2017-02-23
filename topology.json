@@ -26,6 +26,9 @@
     "newServiceCatalog": "NEW_SERVICE_CATALOG",
     "newTenantList": "NEW_TENANT_LIST",
     "userAuthenticated": "USER_AUTHENTICATED",
-    "scheduleJob": "SCHEDULE_NEW_JOB"
+    "scheduleJob": "SCHEDULE_NEW_JOB",
+    "metadadaResponse": "METADATA_RESPONSE",
+    "metadataRequest": "METADATA_REQUEST",
+    "registerPublisher": "REGISTER_NEW_PUBLISHER"
   }
 }
