@@ -1,4 +1,4 @@
-import { InvalidJsonError, ApiError } from '../common';
+import { SubscriberClient, InvalidJsonError, ApiError } from '../common';
 
 export class RouterUtils {
   static checkCredentials(req, res, next): any {
@@ -27,4 +27,23 @@ export class RouterUtils {
       res.json(new ApiError('Missing Endpoint-ID header', 400, 'BAD_REQUEST'));
     }
   }
+
+  static getInfoFromServices(req, res, next) {
+    if (req.method === 'POST') {
+      if ((req.path in SubscriberClient.registeredMessages) && (SubscriberClient.registeredMessages[req.path].length > 0)) {
+        Promise.all(SubscriberClient.registeredMessages[req.path].map(SubscriberClient.notifyPublisher.bind(SubscriberClient)))
+          .then(results => {
+            return Promise.resolve(results.forEach(result => {
+              req.body[result['accessKey']] = result['body'];
+            }));
+          })
+          .then(() => {
+            next();
+          });
+      }
+    }
+    else {
+      next();
+    }
+  } 
 }

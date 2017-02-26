@@ -5,14 +5,16 @@ import { Logger, LoggerFactory, InternalError } from './';
 export class RabbitClient {
   public rabbitConnection = rabbit;
   private exchangeName: string;
-
+  public registeredMessages: {};
+  public queueName: string;
+  
   public static LOGGER: Logger = LoggerFactory.getLogger();
-  constructor(exchangeName: string, queueName: string) {
-    RabbitClient.LOGGER.debug(`Exchange ${exchangeName}`);
-    RabbitClient.LOGGER.debug(`Queue ${queueName}`);
+  constructor(exchangeName: string) {
     this.exchangeName = exchangeName;
+  }
 
-    Topology.createTopology(this.rabbitConnection)
+  connectClient(queueName: string, serviceId: string) {
+    Topology.createTopology(this.rabbitConnection, serviceId)
       .then(() => {
         RabbitClient.LOGGER.info('Successfully initialized RabbitMQ connection');
         this.rabbitConnection.startSubscription(queueName);
@@ -32,4 +34,26 @@ export class RabbitClient {
       body: message
     });
   }
+  
+  notifyPublisher(message): Promise<any> {
+    const messageParameter = {
+      type: message.type,
+      expiresAfter: 1000,
+      routingKey: message.routingKey || '',
+      body: message.body
+    };
+
+    return this.rabbitConnection.request(this.exchangeName, messageParameter)
+      .then(response => {
+        response.ack();
+        RabbitClient.LOGGER.debug(`Publisher replied with ${JSON.stringify(response.body)}`);
+        return Promise.resolve({
+          body: response.body,
+          keys: message.accessKey
+        });
+      });
+  }
 }
+
+
+export let SubscriberClient = new RabbitClient(Topology.EXCHANGES.servicesExchange);

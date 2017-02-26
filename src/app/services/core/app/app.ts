@@ -10,19 +10,30 @@ import { ServiceUtils } from './utils';
 require('dotenv').config();
 
 const LOGGER: Logger = LoggerFactory.getLogger();
-const apiRouter: Router = ApiRouterFactory.getApiRouter();
 
-// Get the application middleware (to be mounted after the api router)
 const errorMiddleware = [
   RestErrorMiddleware.normalizeToRestError,
   RestErrorMiddleware.serializeRestError
 ];
 
-const app: Express = ExpressAppFactory.getExpressApp(apiRouter, null, errorMiddleware);
+// Register the service and pass the service ID to further calls 
+ServiceUtils.registerService()
+  .then(serviceId => {
+    LOGGER.info(`Service ID returned by the Service Manager - ${serviceId}`);
+    const apiRouter: Router = ApiRouterFactory.getApiRouter(serviceId);
+    const app: Express = ExpressAppFactory.getExpressApp(apiRouter, null, errorMiddleware);
+    app.listen(parseInt(process.env.PORT), () => {
+     LOGGER.info(`Express server listening on port ${process.env.PORT}.`);
+    });
+  })
+  .catch(error => {
+    LOGGER.error(`Unable to register service - ${JSON.stringify(error)}`);  
+    const apiRouter: Router = ApiRouterFactory.getApiRouter('CORE_NOTIFICATIONS');
+    const app: Express = ExpressAppFactory.getExpressApp(apiRouter, null, errorMiddleware);
+    app.listen(parseInt(process.env.PORT), () => {
+     LOGGER.info(`Express server listening on port ${process.env.PORT}.`);
+    });
+  });
 
-// Register new instantiated service
-ServiceUtils.registerService();
 
-app.listen(parseInt(process.env.PORT), () => {
-  LOGGER.info(`Express server listening on port ${process.env.PORT}.`);
-});
+

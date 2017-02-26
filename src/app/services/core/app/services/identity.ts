@@ -7,7 +7,7 @@ import { Topology } from '../config';
 export class IdentityService extends OpenstackAPIModel {
   private apiHost: string;
   private apiPath: string;
-  private apiPort: string;
+  private apiPort: number;
   private apiVersion: string;
 
   constructor(apiHost: string, apiPort: string, apiPath: string, apiVersion: string) {
@@ -16,7 +16,7 @@ export class IdentityService extends OpenstackAPIModel {
     this.type = 'identity';
     this.apiHost = apiHost;
     this.apiPath = apiPath;
-    this.apiPort = apiPort;
+    this.apiPort = parseInt(apiPort);
     this.apiVersion = apiVersion;
   }
   

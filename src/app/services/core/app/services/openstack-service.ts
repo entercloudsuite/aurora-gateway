@@ -1,6 +1,6 @@
 import http = require('http');
 import request = require('request');
-import { Logger, LoggerFactory, InternalError, ApiError, EventEmitter } from '../common';
+import { Logger, OpenstackAPIError, LoggerFactory, ServicePropreties, InternalError, ApiError, EventEmitter } from '../common';
 import { ServiceUtils } from '../utils';
 import util = require('util');
 import url = require('url');
@@ -25,7 +25,7 @@ export class OpenstackService {
     });
   }
   
-  static callOSApi(options: {}, body?: any): Promise<any> {
+  static callOSApi(options: http.RequestOptions, body?: any): Promise<any> {
     const requestOptions = {
       protocol: options.protocol || 'http:',
       host: options.host,
@@ -55,17 +55,13 @@ export class OpenstackService {
     return new Promise((resolve, reject) => {
       if (APIResponse.statusCode < 200 || APIResponse.statusCode > 299) {
         // In some cases OpenStack APIs return an html in case of error
-        let OSApiError = {error: {}};
+        let OSApiError: OpenstackAPIError;
         try {
           OSApiError = JSON.parse(APIResponse.body);
           if (!OSApiError.error) {
-            OSApiError = {
-              'error': {
-                'message': OSApiError,
-                'code': APIResponse.statusCode,
-                'title': 'OpenStack API error'
-              }
-            };
+            OSApiError.error.code = APIResponse.statusCode;
+            OSApiError.error.message = APIResponse.body;
+            OSApiError.error.title = 'OpenStack API error';
           }
         } catch (e) {
           OSApiError = {

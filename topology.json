@@ -6,7 +6,7 @@
     },
     "servicesExchange": {
       "name": "AURORA_SERVICES_EXCHANGE",
-      "type": "direct"
+      "type": "topic"
     }
   },
   "queues": {
@@ -16,7 +16,7 @@
   },
   "bindings": {
     "AURORA_GENERAL": ["AURORA_GENERAL_EXCHANGE", []],
-    "AURORA_SERVICES_REQUESTS": ["AURORA_SERVICES_EXCHANGE", []],
+    "AURORA_SERVICES_REQUESTS": ["AURORA_SERVICES_EXCHANGE", ["NOTIFICATION*"]],
     "AURORA_SERVICES_MESSAGES": [ "AURORA_SERVICES_EXCHANGE", []]
   },
   "messages": {

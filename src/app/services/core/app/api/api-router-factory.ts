@@ -1,8 +1,10 @@
 import express = require('express');
 import { Router } from 'express';
-import { Logger, LoggerFactory, InvalidResourceUrlError, EventEmitter } from '../common';
-import { OpenstackService, IdentityService, NovaService, CinderService, GlanceService, NeutronService, SwiftService } from '../services';
+import { SubscriberClient, Logger, LoggerFactory, InvalidResourceUrlError, EventEmitter } from '../common';
+import { IdentityService, NovaService, CinderService, GlanceService, NeutronService, SwiftService } from '../services';
 import { IdentityRouter, SwiftRouter, GlanceRouter, NovaRouter, NeutronRouter, CinderRouter } from './routes';
+import { RouterUtils } from '../utils';
+import { AMQPTopology, Topology } from '../config';
 
 export class ApiRouterFactory {
 
@@ -10,8 +12,24 @@ export class ApiRouterFactory {
 
   private constructor() {}
 
-  static getApiRouter(): Router {
+  static getApiRouter(serviceID: string): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
+    
+    SubscriberClient.connectClient(Topology.QUEUES.servicesRequests, serviceID);
+    SubscriberClient.rabbitConnection.handle(Topology.MESSAGES.registerPublisher, message => {
+      const newMessage = {
+        type: message.body.type,
+        routingKey: message.routingKey || '',
+        accessKey: message.accessKey
+      };
+      if (typeof SubscriberClient[message.body.path] === undefined) {
+        SubscriberClient[message.body.path] = [newMessage];
+      } else {
+        SubscriberClient[message.body.path].append(newMessage);
+      }
+    });
+
+
 
     const identityService = new IdentityService(
       process.env.KEYSTONE_API_HOST,
@@ -25,7 +43,20 @@ export class ApiRouterFactory {
     const glanceService = new GlanceService();
     const cinderService = new CinderService();
     const swiftService = new SwiftService();
-    
+
+    SubscriberClient.rabbitConnection.handle(Topology.MESSAGES.registerPublisher, message => {
+      const newMessage = {
+        type: message.body.type,
+        routingKey: message.routingKey || '',
+        accessKey: message.accessKey
+      };
+      if (typeof SubscriberClient[message.body.path] === undefined) {
+        SubscriberClient[message.body.path] = [newMessage];
+      } else {
+        SubscriberClient[message.body.path].append(newMessage);
+      }
+    });
+
     EventEmitter.serviceInstances = {
       nova: novaService,
       neutron: neutronService,
@@ -51,7 +82,7 @@ export class ApiRouterFactory {
 
     ApiRouterFactory.LOGGER.info('Mounting routes');
     apiRouter.use('/identity', identityRouter);
-    apiRouter.use('/nova', novaRouter);
+    apiRouter.use('/nova', RouterUtils.getInfoFromServices, novaRouter);
     apiRouter.use('/cinder', cinderRouter);
     apiRouter.use('/neutron', neutronRouter);
     apiRouter.use('/glance', glanceRouter);

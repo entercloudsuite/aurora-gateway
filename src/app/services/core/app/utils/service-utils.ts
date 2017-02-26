@@ -1,5 +1,7 @@
 import { Logger, LoggerFactory, InternalError  } from '../common';
 import http = require('http');
+import express = require('express');
+import { Response } from 'express';
 
 
 export class ServiceUtils {
@@ -14,7 +16,7 @@ export class ServiceUtils {
     };
     
     ServiceUtils.LOGGER.info(`Registering new service with ${JSON.stringify(serviceOptions)}`);
-    ServiceUtils.sendRequest({
+    return ServiceUtils.sendRequest({
         protocol: 'http:',
         host: process.env.REGISTRY_IP,
         port: process.env.REGISTRY_PORT,
@@ -23,18 +25,15 @@ export class ServiceUtils {
         headers: {'Content-Type': 'application/json'}
       }, serviceOptions
     )
-      .then(result => {
-        ServiceUtils.LOGGER.info(`Successfully registered new service - ${result.body}`);
-      })
-      .catch(error => {
-        ServiceUtils.LOGGER.error(`Unable to register service - ${JSON.stringify(error)}`);
-      });
+    .then(result => {
+      return Promise.resolve(JSON.parse(result['body'])['data']);
+    });
   }
   
-  static sendRequest(requestOptions: {}, requestBody?: any) {
+  static sendRequest(requestOptions: http.RequestOptions, requestBody?: any) {
     if (requestBody) {
       requestBody = JSON.stringify(requestBody);
-      requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody);
+      requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody).toString();
     }
 
     return new Promise((resolve, reject) => {

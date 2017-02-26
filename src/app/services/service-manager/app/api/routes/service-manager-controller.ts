@@ -21,8 +21,8 @@ export class ServiceManagerController extends RestController {
       });
   }
 
-  listRegisteredServices(req, res) {
-    return this.respond(res, this.serviceManager.serviceTable);
+  listRegisteredServices(req, res): Promise<any>{
+    return Promise.resolve(this.respond(res, this.serviceManager.serviceTable));
   }
   
   listAvailableService(req, res): Promise<any> {

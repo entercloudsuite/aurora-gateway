@@ -1,5 +1,5 @@
 import { OpenstackService } from './openstack-service';
-import { ResourceNotFoundError, Logger, LoggerFactory } from '../common';
+import { ResourceNotFoundError, Logger, LoggerFactory, ServicePropreties } from '../common';
 
 import url = require('url');
 
@@ -14,32 +14,32 @@ export class OpenstackAPIModel {
     this.endpoints = {};
   };
 
-  static updateEndpoint(newEndpoint: {}, serviceInstance: OpenstackAPIModel) {
-    if (!(newEndpoint['id'] in serviceInstance.endpoints)) {
+  static updateEndpoint(newEndpoint: ServicePropreties, serviceInstance: OpenstackAPIModel) {
+    if (!(newEndpoint.id in serviceInstance.endpoints)) {
       // Remove tenant id from urls on nova and cinder
-      if (newEndpoint['publicURL'].split('/').length === 5) {
-        newEndpoint['adminURL'] = newEndpoint['adminURL'].substr(0, newEndpoint['adminURL'].lastIndexOf('/'));
-        newEndpoint['internalURL'] = newEndpoint['internalURL'].substr(0, newEndpoint['internalURL'].lastIndexOf('/'));
-        newEndpoint['publicURL'] = newEndpoint['publicURL'].substr(0, newEndpoint['publicURL'].lastIndexOf('/'));
+      if (newEndpoint.publicUrl.split('/').length === 5) {
+        newEndpoint.adminUrl = newEndpoint.adminUrl.substr(0, newEndpoint.adminUrl.lastIndexOf('/'));
+        newEndpoint.internalUrl = newEndpoint.internalUrl.substr(0, newEndpoint.internalUrl.lastIndexOf('/'));
+        newEndpoint.publicUrl = newEndpoint.internalUrl.substr(0, newEndpoint.internalUrl.lastIndexOf('/'));
       }
 
-      const parsedUrl = url.parse(newEndpoint['publicURL']);
+      const parsedUrl = url.parse(newEndpoint.publicUrl);
       if (parsedUrl.path === '/') {
         parsedUrl.path = '';
       }
       
       serviceInstance.endpoints[newEndpoint['id']] = {
-        adminUrl: newEndpoint['adminURL'],
-        region: newEndpoint['region'],
-        internalUrl: newEndpoint['internalURL'],
-        publicUrl: newEndpoint['publicURL'],
+        adminUrl: newEndpoint.adminUrl,
+        region: newEndpoint.region,
+        internalUrl: newEndpoint.internalUrl,
+        publicUrl: newEndpoint.publicUrl,
         port: parsedUrl.port,
         host: parsedUrl.hostname,
         path: parsedUrl.path
       };
 
       OpenstackAPIModel.LOGGER.debug(
-        `Saved endpoint for ${serviceInstance.name} - ${JSON.stringify(serviceInstance.endpoints[newEndpoint['id']])}`
+        `Saved endpoint for ${serviceInstance.name} - ${JSON.stringify(serviceInstance.endpoints[newEndpoint.id])}`
       );
     }
   }

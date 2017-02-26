@@ -16,7 +16,7 @@ export class ApiRouterFactory {
     const serviceManager = new ServiceManager();
     
     const serviceManagerRouter: Router = new ServiceManagerRouter(serviceManager).router;
-
+    
     ApiRouterFactory.LOGGER.info('Mounting routes');
     apiRouter.use('/', serviceManagerRouter);
     apiRouter.all('*', (req, res, next) => {

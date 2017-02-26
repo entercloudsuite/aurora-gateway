@@ -1,4 +1,4 @@
-import config = require('../../../../../../topology');
+import fs = require('fs');
 import { Logger, LoggerFactory } from '../common';
 
 export class AMQPTopology {
@@ -15,12 +15,16 @@ export class AMQPTopology {
     general: '',
     servicesRequests: '',
     servicesMessages: '',
+    notifications: ''
   };
-  public MESSAGES = {};
+  public MESSAGES = {
+    registerPublisher: ''
+  };
 
   public static LOGGER: Logger = LoggerFactory.getLogger();
 
   constructor() {
+    const config = JSON.parse(fs.readFileSync(process.env.TOPOLOGY_FILE_PATH, 'utf-8'));
     this.connection = {
       user: process.env.RABBIT_USER,
       pass: process.env.RABBIT_PASSWORD,
@@ -57,22 +61,23 @@ export class AMQPTopology {
       });
     });
 
-    this.queues.push({
-      name: 'AURORA_KEYSTONE_NOTIFICATIONS',
-      autoDelete: true
-    });
-
-    this.bindings.push({
-      exchange: this.EXCHANGES.servicesExchange,
-      target: 'AURORA_KEYSTONE_NOTIFICATIONS',
-      keys: ['NOTIFICATION']
-    });
-
-    this.QUEUES['notifications'] = 'AURORA_KEYSTONE_NOTIFICATIONS';
     this.MESSAGES = config.messages;
   }
 
-  createTopology(rabbit): any {
+  createTopology(rabbit, serviceId: string): any {
+    
+    this.queues.push({
+      name: serviceId,
+      autoDelete: true
+    });
+    this.bindings.push({
+      exchange: this.EXCHANGES.servicesExchange,
+      target: serviceId,
+      keys: ['NOTIFICATION']
+    });
+    this.QUEUES.notifications = serviceId;
+
+
     return rabbit.configure({
       connection: this.connection,
       exchanges: this.exchanges,
@@ -82,4 +87,4 @@ export class AMQPTopology {
   }
 }
 
-export const Topology = new AMQPTopology();
+export let Topology = new AMQPTopology();

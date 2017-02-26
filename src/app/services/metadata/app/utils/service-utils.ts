@@ -5,17 +5,17 @@ import http = require('http');
 export class ServiceUtils {
   private static LOGGER: Logger = LoggerFactory.getLogger();
   
-  static registerService() {
-    const serviceOptions = {
+  static registerService(): Promise<any>{
+        const serviceOptions = {
       name: process.env.SERVICE_NAME,
       port: process.env.PORT,
       routingPath: process.env.GATEWAY_ROUTING_PATH,
       apiPath: process.env.SERVICE_API_PATH,
     };
-
+    
     ServiceUtils.LOGGER.info(`Registering new service with ${JSON.stringify(serviceOptions)}`);
-    ServiceUtils.sendRequest({
-        protocol: 'http',
+    return ServiceUtils.sendRequest({
+        protocol: 'http:',
         host: process.env.REGISTRY_IP,
         port: process.env.REGISTRY_PORT,
         path: '/register',
@@ -23,15 +23,12 @@ export class ServiceUtils {
         headers: {'Content-Type': 'application/json'}
       }, serviceOptions
     )
-      .then(result => {
-        ServiceUtils.LOGGER.info(`Successfully registered new service - ${result.body}`);
-      })
-      .catch(error => {
-        ServiceUtils.LOGGER.error(`Unable to register service - ${JSON.stringify(error)}}`);        
-      });
+    .then(result => {
+      return Promise.resolve(JSON.parse(result['body'])['data']);
+    });
   }
   
-  static sendRequest(requestOptions: {}, requestBody?: any) {
+  static sendRequest(requestOptions: {}, requestBody?: any): Promise<any> {
     if (requestBody) {
       requestBody = JSON.stringify(requestBody);
       requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody);
@@ -53,7 +50,7 @@ export class ServiceUtils {
       
       newRequest.on('error', requestError => {
         ServiceUtils.LOGGER.error(`Request error - ${JSON.stringify(requestError)}`);
-        return reject(new InternalError(requestError));
+        return reject(new Error('Error sending request'));
       });
 
       if (requestBody) {

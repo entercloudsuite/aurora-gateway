@@ -57,18 +57,6 @@ export class AMQPTopology {
       });
     });
 
-    this.queues.push({
-      name: 'AURORA_KEYSTONE_NOTIFICATIONS',
-      autoDelete: true
-    });
-
-    this.bindings.push({
-      exchange: this.EXCHANGES.servicesExchange,
-      target: 'AURORA_KEYSTONE_NOTIFICATIONS',
-      keys: ['NOTIFICATION']
-    });
-
-    this.QUEUES['notifications'] = 'AURORA_KEYSTONE_NOTIFICATIONS';
     this.MESSAGES = config.messages;
   }
 

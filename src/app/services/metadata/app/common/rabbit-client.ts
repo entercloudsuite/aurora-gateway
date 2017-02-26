@@ -1,6 +1,6 @@
 import rabbit = require('rabbot');
 import { Topology } from '../config';
-import { Logger, LoggerFactory, InternalError } from './';
+import { Logger, LoggerFactory } from './';
 
 export class RabbitClient {
   public rabbitConnection = rabbit;
@@ -17,7 +17,6 @@ export class RabbitClient {
       .catch((error) => {
         RabbitClient.LOGGER.error('Error while trying to connect to RabbitMQ');
         RabbitClient.LOGGER.error(error);
-        throw new InternalError(error);
       });
   }
 
@@ -28,7 +27,6 @@ export class RabbitClient {
       body: message
     })
       .then(() => {
-
         RabbitClient.LOGGER.debug(`Published message - ${JSON.stringify(message)} on ${this.exchangeName}`);
       });
   }

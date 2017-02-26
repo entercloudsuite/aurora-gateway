@@ -13,7 +13,13 @@ const LOGGER: Logger = LoggerFactory.getLogger();
 const app: Express = express();
 
 // Register new instantiated service
-ServiceUtils.registerService();
+ServiceUtils.registerService()
+  .then(serviceId => {
+    LOGGER.info(`Service ID returned by the Service Manager - ${serviceId}`);
+  })
+  .catch(error => {
+    LOGGER.error(`Unable to register service ${error}`);
+  });
 const messageHandler = new RabbitClient(
   Topology.EXCHANGES.servicesExchange,
   Topology.QUEUES.servicesRequests
@@ -23,7 +29,7 @@ const messageHandler = new RabbitClient(
 // Notify a specific service about the message that should be requested
 messageHandler.publishMessage(
   Topology.MESSAGES.registerPublisher,
-  'NOVA_NOTIFICATIONS',
+  'NOTIFICATION_METADATA',
   {
     requestPath: 'api/nova/vms',
     messageName: Topology.MESSAGES.metadataRequest
