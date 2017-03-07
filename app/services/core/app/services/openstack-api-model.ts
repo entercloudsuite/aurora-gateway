@@ -30,27 +30,28 @@ export class OpenstackAPIModel {
    * @memberOf OpenstackAPIModel
    */
   static updateEndpoint(newEndpoint: ServicePropreties, serviceInstance: OpenstackAPIModel) {
+    OpenstackAPIModel.LOGGER.debug(`Parsing new endpoint - ${JSON.stringify(newEndpoint)}`);
     if (!(newEndpoint.id in serviceInstance.endpoints)) {
       // Remove tenant id from urls on nova and cinder
-      if (newEndpoint.publicUrl.split('/').length === 5) {
-        newEndpoint.adminUrl = newEndpoint.adminUrl.substr(0, newEndpoint.adminUrl.lastIndexOf('/'));
-        newEndpoint.internalUrl = newEndpoint.internalUrl.substr(0, newEndpoint.internalUrl.lastIndexOf('/'));
-        newEndpoint.publicUrl = newEndpoint.internalUrl.substr(0, newEndpoint.internalUrl.lastIndexOf('/'));
+      if (newEndpoint.publicURL.split('/').length === 5) {
+        newEndpoint.adminURL = newEndpoint.adminURL.substr(0, newEndpoint.adminURL.lastIndexOf('/'));
+        newEndpoint.internalURL = newEndpoint.internalURL.substr(0, newEndpoint.internalURL.lastIndexOf('/'));
+        newEndpoint.publicURL = newEndpoint.publicURL.substr(0, newEndpoint.publicURL.lastIndexOf('/'));
       }
 
-      const parsedUrl = url.parse(newEndpoint.publicUrl);
-      if (parsedUrl.path === '/') {
-        parsedUrl.path = '';
+      const parsedURL = url.parse(newEndpoint.publicURL);
+      if (parsedURL.path === '/') {
+        parsedURL.path = '';
       }
       
       serviceInstance.endpoints[newEndpoint['id']] = {
-        adminUrl: newEndpoint.adminUrl,
+        adminUrl: newEndpoint.adminURL,
         region: newEndpoint.region,
-        internalUrl: newEndpoint.internalUrl,
-        publicUrl: newEndpoint.publicUrl,
-        port: parsedUrl.port,
-        host: parsedUrl.hostname,
-        path: parsedUrl.path
+        internalUrl: newEndpoint.internalURL,
+        publicUrl: newEndpoint.publicURL,
+        port: parsedURL.port,
+        host: parsedURL.hostname,
+        path: parsedURL.path
       };
 
       OpenstackAPIModel.LOGGER.debug(

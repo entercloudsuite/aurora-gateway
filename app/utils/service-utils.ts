@@ -22,6 +22,7 @@ export class ServiceUtils {
       requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody).toString();
     }
     
+    ServiceUtils.LOGGER.debug(`Sending new request with ${JSON.stringify(requestOptions)}`);
     return new Promise((resolve, reject) => {
       let responseBody: string = '';
       const newRequest = http.request(requestOptions, res => {
@@ -31,6 +32,7 @@ export class ServiceUtils {
         });
 
         res.on('end', () => {
+          ServiceUtils.LOGGER.debug(`Response body - ${responseBody}`);
           res['body'] = responseBody;
           return resolve(res);
         });

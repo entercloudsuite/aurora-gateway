@@ -11,8 +11,11 @@ export class AppConfig {
   rabbitHost: string;
   serviceManagerHost: string;
   serviceManagerPort: number;
+  keystoneAPIPort: number;
+  keystoneAPIPath: string;
+  keystoneAPIHost: string;
+  keystoneAPIVersion: string;
   name: string;
-  apiPath: string;
   gatewayRoutingPath: string;
   // optional environment variables
   redisPort: number;
@@ -29,8 +32,13 @@ export class AppConfig {
     this.rabbitUserPassword = this.getStringEnvVar('RABBIT_PASS');
     this.rabbitPort = this.getIntegerEnvVar('RABBIT_PORT');
     this.rabbitHost = this.getStringEnvVar('RABBIT_HOST');
+    this.keystoneAPIHost = this.getStringEnvVar('KEYSTONE_API_HOST');
+    this.keystoneAPIPath = this.getStringEnvVar('KEYSTONE_API_PATH');
+    this.keystoneAPIPort = this.getIntegerEnvVar('KEYSTONE_API_PORT');
+    this.keystoneAPIVersion = this.getStringEnvVar('KEYSTONE_API_VERSION');
+    this.serviceManagerHost = this.getStringEnvVar('SERVICE_MANAGER_HOST');
+    this.serviceManagerPort = this.getIntegerEnvVar('SERVICE_MANAGER_PORT');
     this.name = this.getStringEnvVar('SERVICE_NAME');
-    this.apiPath = this.getStringEnvVar('SERVICE_API_PATH');
     this.gatewayRoutingPath = this.getStringEnvVar('GATEWAY_ROUTING_PATH');
     // optional environment variables
     this.redisPort = this.getIntegerEnvVar('REDIS_PORT', 6379);

@@ -10,13 +10,13 @@ export class IdentityService extends OpenstackAPIModel {
   private apiPort: number;
   private apiVersion: string;
 
-  constructor(apiHost: string, apiPort: string, apiPath: string, apiVersion: string) {
+  constructor(apiHost: string, apiPort: number, apiPath: string, apiVersion: string) {
     super();
     this.name = 'keystone';
     this.type = 'identity';
     this.apiHost = apiHost;
     this.apiPath = apiPath;
-    this.apiPort = parseInt(apiPort);
+    this.apiPort = apiPort;
     this.apiVersion = apiVersion;
   }
   

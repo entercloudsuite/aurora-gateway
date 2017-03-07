@@ -33,7 +33,7 @@ export class ServiceManager {
     ServiceManager.LOGGER.info(`Registering new service - ${JSON.stringify(serviceOptions)}`);
     const newService = new ServiceModel(
       serviceOptions.host, serviceOptions.port, serviceOptions.name,
-      'READY', serviceOptions.routingPath, serviceOptions.apiPath
+      'READY', serviceOptions.routingPath, serviceOptions.options
     );
     
     const serviceId = objectHash(newService);
@@ -82,12 +82,7 @@ export class ServiceManager {
       headers: { 'Content-Type': 'application/json' }
     };
     
-    const requestBody = {
-      host: newService.host,
-      routingPath: newService.routingPath,
-      name: newService.name
-    };
-
+    const requestBody = newService.toJSON();
     ServiceManager.LOGGER.debug(`Calling gateway on new service - ${JSON.stringify(newService)}`);
     ServiceUtils.sendRequest(requestOptions, requestBody);
   }

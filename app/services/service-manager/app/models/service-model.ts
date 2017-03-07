@@ -6,24 +6,24 @@ export class ServiceModel implements Service{
   public name: string;
   public status = 'READY';
   public routingPath: string;
-  public apiPath: string;
+  public options: {};
   public lastUpdate: any;
   
-  constructor(host: string, port: number, name: string, status: string, routingPath: string, apiPath: string) {
+  constructor(host: string, port: number, name: string, status: string, routingPath: string, options: {}) {
     this.host = host;
     this.port = port;
     this.name = name;
     this.status = status;
     this.routingPath = routingPath;
-    this.apiPath = apiPath;
+    this.options = options || {};
     this.lastUpdate = Date.now();
   }
   
-  toJSON() {
+  public toJSON() {
     return {
       host: this.host,
       port: this.port,
-      apiPath: this.apiPath,
+      options: this.options,
       name: this.name,
       routingPath: this.routingPath
     }

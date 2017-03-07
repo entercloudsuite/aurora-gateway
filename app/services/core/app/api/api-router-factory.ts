@@ -4,7 +4,7 @@ import { SubscriberClient, Logger, LoggerFactory, InvalidResourceUrlError, Event
 import { IdentityService, NovaService, CinderService, GlanceService, NeutronService, SwiftService } from '../services';
 import { IdentityRouter, SwiftRouter, GlanceRouter, NovaRouter, NeutronRouter, CinderRouter } from './routes';
 import { RouterUtils } from '../utils';
-import { AMQPTopology, Topology } from '../config';
+import { AMQPTopology, Topology, APP_CONFIG } from '../config';
 
 export class ApiRouterFactory {
 
@@ -29,13 +29,11 @@ export class ApiRouterFactory {
       }
     });
 
-
-
     const identityService = new IdentityService(
-      process.env.KEYSTONE_API_HOST,
-      process.env.KEYSTONE_API_PORT,
-      process.env.KEYSTONE_API_PATH,
-      process.env.KEYSTONE_API_VERSION
+      APP_CONFIG.keystoneAPIHost,
+      APP_CONFIG.keystoneAPIPort,
+      APP_CONFIG.keystoneAPIPath,
+      APP_CONFIG.keystoneAPIVersion
     );
 
     const novaService = new NovaService();

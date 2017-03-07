@@ -21,7 +21,7 @@ export class ServiceUtils {
       name: APP_CONFIG.name,
       port: APP_CONFIG.port,
       routingPath: APP_CONFIG.gatewayRoutingPath,
-      apiPath: APP_CONFIG.apiPath,
+      options: { 'AUTHENTICATION': '/api/identity/tokens' }
     };
     
     ServiceUtils.LOGGER.info(`Registering new service with ${JSON.stringify(serviceOptions)}`);
@@ -55,6 +55,7 @@ export class ServiceUtils {
       requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody).toString();
     }
 
+    ServiceUtils.LOGGER.debug(`Sending new request with ${JSON.stringify(requestOptions)}`);
     return new Promise((resolve, reject) => {
       let responseBody: string = '';
       const newRequest = http.request(requestOptions, res => {

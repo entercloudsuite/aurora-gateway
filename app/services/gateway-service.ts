@@ -4,10 +4,14 @@ import { APP_CONFIG } from '../config';
 import http = require('http');
 
 export class GatewayService {
-  public serviceName: string;
+  public name: string;
+  public routingPath: string;
+  public options: {};
 
-  constructor(name: string) {
-    this.serviceName = name;
+  constructor(newService: {}) {
+    this.name = newService.name;
+    this.routingPath = newService.routingPath;
+    this.options = newService.options || {};
   }
 
   private static LOGGER: Logger = LoggerFactory.getLogger();
@@ -47,7 +51,7 @@ export class GatewayService {
       host: APP_CONFIG.serviceManagerHost,
       port: APP_CONFIG.serviceManagerPort,
       path: '/service',
-      headers: { 'Service-Name': this.serviceName }
+      headers: { 'Service-Name': this.name }
     })
       .then(serviceManagerResponse => {
         return Promise.resolve(JSON.parse(serviceManagerResponse.body));
@@ -66,13 +70,13 @@ export class GatewayService {
    * @memberOf GatewayService
    */
   callService(incomingRequest, serviceHost, servicePort, apiPath): Promise<any> {
-    GatewayService.LOGGER.info(`Calling ${serviceHost}, on ${incomingRequest.path})}`);
+    GatewayService.LOGGER.info(`Calling ${serviceHost}, on ${incomingRequest.path}`);
     GatewayService.LOGGER.info(`Request headers - ${JSON.stringify(incomingRequest.headers)})}`);
     GatewayService.LOGGER.info(`Request body - ${JSON.stringify(incomingRequest.body)})}`);
     return GatewayService.sendRequest({
       host: serviceHost,
       port: servicePort,
-      path: apiPath + incomingRequest.path,
+      path: incomingRequest.path,
       method: incomingRequest.method,
       headers: incomingRequest.headers,
       body: incomingRequest.body

@@ -10,6 +10,7 @@ export class RestController {
   }
 
   forwardResponse(res: Response,  data: any, statusCode: number = 200): Response {
+    res.set('Content-Type', 'application/json')
     return res.status(statusCode).send(data);
   }
   

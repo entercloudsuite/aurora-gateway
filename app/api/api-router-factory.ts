@@ -37,19 +37,18 @@ export class ApiRouterFactory {
    * Creates a new router for a route specified by the Service Manager.
    * 
    * @static
-   * @param {string} newAPIPath 
-   * @param {string} serviceName 
+   * @param {} newService
    * @returns {Router} 
    * 
    * @memberOf ApiRouterFactory
    */
-  static registerNewAPI(newAPIPath: string, serviceName: string): Router {
+  static registerNewAPI(newService: {}): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
     
-    const gatewayService = new GatewayService(serviceName);
+    ApiRouterFactory.LOGGER.info(`Registering new route with ${JSON.stringify(newService)}`);
+    const gatewayService = new GatewayService(newService);
     const gatewayRouter: Router  = new GatewayRouter(gatewayService).router;
     
-    ApiRouterFactory.LOGGER.info(`Registering new route on ${newAPIPath} for ${serviceName}`);
 
     apiRouter.use('/', gatewayRouter);
     return apiRouter;

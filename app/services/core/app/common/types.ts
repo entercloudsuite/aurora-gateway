@@ -10,9 +10,9 @@
  */
 export interface ServicePropreties {
     id: string;
-    publicUrl: string;
-    internalUrl: string;
-    adminUrl: string;
+    publicURL: string;
+    internalURL: string;
+    adminURL: string;
     name: string;
     region: string;
 }

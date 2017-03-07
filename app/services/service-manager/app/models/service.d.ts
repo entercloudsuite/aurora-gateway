@@ -4,5 +4,7 @@ export interface Service {
     name: string;
     state?: string;
     routingPath: string;
-    apiPath: string;
+    options: {};
+
+    toJSON(): {};
 }

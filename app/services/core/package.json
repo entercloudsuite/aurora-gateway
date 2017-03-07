@@ -14,7 +14,7 @@
     "predev": "npm run clean",
     "dev": "concurrently \"npm run tsc-watch\" \"npm run nodemon\"",
     "prenodemon": "wait-on ./build/app.js",
-    "nodemon": "nodemon -r dotenv/config --delay 1500ms --watch dev.env --watch ./build \"./build/app.js\" dotenv_config_path=.env",
+    "nodemon": "nodemon -r dotenv/config --delay 1500ms --watch dev.env --watch ./build --inspect \"./build/app.js\" dotenv_config_path=.env",
     "tsc-watch": "tsc -w",
     "lint": "tslint -c tslint.json \"./app/**/*.ts\""
   },

@@ -10,6 +10,7 @@ export class ServiceManagerController extends RestController {
   private static LOGGER: Logger = LoggerFactory.getLogger();
 
   registerService(req, res, next): Promise<any> {
+    ServiceManagerController.LOGGER.info(`Registering new service with ${JSON.stringify(req.body)}`);
     return ServiceUtils.getIPAddress(req)
       .then(ipAddress => {
         let options = req.body;
