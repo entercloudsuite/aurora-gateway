@@ -1,6 +1,6 @@
 {
-  "name": "aurora-manager",
-  "version": "0.0.1",
+  "name": "aurora-backend",
+  "version": "1.0.0",
   "description": "Manager service for plugins registered to Aurora",
   "author": "Bogdan Carpusor <bcarpusor@cloudbasesolutions.com>",
   "main": "src/app/app.ts",
@@ -13,8 +13,8 @@
     "start": "node ./build/app/app.js",
     "predev": "npm run clean",
     "dev": "concurrently \"npm run tsc-watch\" \"npm run nodemon\"",
-    "prenodemon": "wait-on ./build/app/app.js",
-    "nodemon": "nodemon -r dotenv/config --delay 1500ms --watch dev.env --watch ./build \"./build/app/app.js\" dotenv_config_path=dev.env",
+    "prenodemon": "wait-on ./build/app.js",
+    "nodemon": "nodemon -r dotenv/config --delay 1500ms --watch .env --watch ./build \"./build/app.js\" dotenv_config_path=.env",
     "tsc-watch": "tsc -w",
     "lint": "tslint -c tslint.json \"./src/**/*.ts\""
   },
@@ -35,16 +35,20 @@
     "npm": "3.x"
   },
   "dependencies": {
+    "body-parser": "^1.17.0",
+    "connect-redis": "^3.2.0",
     "core-js": "2.4.1",
+    "cors": "^2.8.1",
     "dotenv": "^2.0.0",
     "express": "4.14.0",
+    "express-session": "^1.15.1",
     "morgan": "1.7.0",
     "object-hash": "^1.1.5",
     "rabbot": "^1.0.8",
     "redis": "^2.6.5",
     "request": "^2.79.0",
     "sequelize": "^3.29.0",
-    "serialize-error": "2.0.0",
+    "serialize-error": "^2.0.0",
     "winston": "2.2.0",
     "winston-logstash": "^0.3.0"
   },
