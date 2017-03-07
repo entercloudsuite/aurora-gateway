@@ -12,7 +12,6 @@ export class AppConfig {
   serviceManagerHost: string;
   serviceManagerPort: number;
   name: string;
-  apiPath: string;
   gatewayRoutingPath: string;
   dbHost: string;
   dbUser: string;
@@ -33,8 +32,9 @@ export class AppConfig {
     this.rabbitUserPassword = this.getStringEnvVar('RABBIT_PASS');
     this.rabbitPort = this.getIntegerEnvVar('RABBIT_PORT');
     this.rabbitHost = this.getStringEnvVar('RABBIT_HOST');
+    this.serviceManagerHost = this.getStringEnvVar('SERVICE_MANAGER_HOST');
+    this.serviceManagerPort = this.getIntegerEnvVar('SERVICE_MANAGER_PORT');
     this.name = this.getStringEnvVar('SERVICE_NAME');
-    this.apiPath = this.getStringEnvVar('SERVICE_API_PATH');
     this.gatewayRoutingPath = this.getStringEnvVar('GATEWAY_ROUTING_PATH');
     this.dbHost = this.getStringEnvVar('DB_HOST');
     this.dbUser = this.getStringEnvVar('DB_USER');

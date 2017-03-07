@@ -1,4 +1,4 @@
-import { EventEmitter, RabbitClient, InvalidJsonError, InternalError } from '../common';
+import { EventEmitter, RabbitClient, InvalidJsonError, InternalError, Logger, LoggerFactory } from '../common';
 import { JobModel } from '../models';
 import { Topology, SQLConfig } from '../config';
 import scheduler = require('node-schedule');
@@ -9,20 +9,37 @@ export class Scheduler {
   public job: JobModel;
   public rabbitClient: RabbitClient;
 
+  private static LOGGER: Logger = LoggerFactory.getLogger();
+
   constructor() {
     this.jobs = {};
     this.job = new JobModel(SQLConfig.getConnection());
     this.rabbitClient = new RabbitClient(
       Topology.EXCHANGES.servicesExchange,
       Topology.QUEUES.servicesRequests);
+    
+    this.checkPersistedJobs();
   }
-  
+
   registerMessageHandlers() {
     Scheduler.manageRabbitMessage.bind(this);
     this.rabbitClient.rabbitConnection.handle(
       Topology.MESSAGES.scheduleJob,
       Scheduler.manageRabbitMessage
     );
+  }
+
+  checkPersistedJobs() {
+    this.getJobs()
+      .then(persistedJobs => {
+        persistedJobs.forEach(persistedJob => {
+          this.jobs[persistedJob.id] = scheduler.scheduleJob(
+          persistedJob.trigger,
+          Scheduler.runJob.bind(this, persistedJob.jobId)
+        );
+        Scheduler.LOGGER.info(`Updated jobs table with ${JSON.stringify(persistedJob)}`)
+      });
+    });
   }
 
   static manageRabbitMessage(message) {

@@ -11,12 +11,11 @@ export class ServiceUtils {
       name: APP_CONFIG.name,
       port: APP_CONFIG.port,
       routingPath: APP_CONFIG.gatewayRoutingPath,
-      apiPath: APP_CONFIG.apiPath,
     };
 
     ServiceUtils.LOGGER.info(`Registering new service with ${JSON.stringify(serviceOptions)}`);
     ServiceUtils.sendRequest({
-        protocol: 'http',
+        protocol: 'http:',
         host: APP_CONFIG.serviceManagerHost,
         port: APP_CONFIG.serviceManagerPort,
         path: '/register',
@@ -38,6 +37,7 @@ export class ServiceUtils {
       requestOptions.headers['Content-Length'] = Buffer.byteLength(requestBody);
     }
     
+    ServiceUtils.LOGGER.debug(`Sending new request with ${JSON.stringify(requestOptions)}`);
     return new Promise((resolve, reject) => {
       let responseBody: string = '';
       const newRequest = http.request(requestOptions, res => {
@@ -53,7 +53,7 @@ export class ServiceUtils {
       });
       
       newRequest.on('error', requestError => {
-        ServiceUtils.LOGGER.error(`Request error - ${JSON.stringify(requestError)}`);
+        ServiceUtils.LOGGER.error(`Request error - ${requestError}`);
         return reject(new InternalError(requestError));
       });
 
