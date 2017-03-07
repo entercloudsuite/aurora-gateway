@@ -7,6 +7,7 @@ export class RabbitClient {
   private exchangeName: string;
 
   public static LOGGER: Logger = LoggerFactory.getLogger();
+
   constructor(exchangeName: string, queueName: string) {
     RabbitClient.LOGGER.debug(`Exchange ${exchangeName}`);
     RabbitClient.LOGGER.debug(`Queue ${queueName}`);
@@ -24,6 +25,16 @@ export class RabbitClient {
       });
   }
 
+  /**
+   * Wrapper for publish method from the rabbot package
+   * 
+   * @param {string} type 
+   * @param {string} routingKey 
+   * @param {*} message 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf RabbitClient
+   */
   publishMessage(type: string, routingKey: string, message: any): Promise<any> {
     RabbitClient.LOGGER.debug(`Publishing message - ${JSON.stringify(message)} on ${this.exchangeName}`);
     return this.rabbitConnection.publish(this.exchangeName, {

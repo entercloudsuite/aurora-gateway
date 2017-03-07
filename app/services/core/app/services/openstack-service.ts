@@ -11,6 +11,14 @@ export class OpenstackService {
 
   constructor() {}
 
+  /**
+   * Goes through each object from the service catalog and emits update events for each endpoint
+   * 
+   * @static
+   * @param {Array<{}>} newServiceCatalog 
+   * 
+   * @memberOf OpenstackService
+   */
   static updateServiceCatalog(newServiceCatalog: Array<{}>) {
     newServiceCatalog.forEach(item => {
       OpenstackService.LOGGER.debug(`Emitting update event for - ${JSON.stringify(item)}`);
@@ -25,6 +33,16 @@ export class OpenstackService {
     });
   }
   
+  /**
+   * Calls an OpenstackService API and parses the response
+   * 
+   * @static
+   * @param {http.RequestOptions} options 
+   * @param {*} [body] 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf OpenstackService
+   */
   static callOSApi(options: http.RequestOptions, body?: any): Promise<any> {
     const requestOptions = {
       protocol: options.protocol || 'http:',
@@ -51,6 +69,15 @@ export class OpenstackService {
       });
   }
 
+  /**
+   * Parses the response from an Openstack request in order to return a proper response
+   * 
+   * @static
+   * @param {any} APIResponse 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf OpenstackService
+   */
   static parseApiResponse(APIResponse): Promise<any> {
     return new Promise((resolve, reject) => {
       if (APIResponse.statusCode < 200 || APIResponse.statusCode > 299) {

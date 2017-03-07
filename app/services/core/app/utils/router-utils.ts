@@ -28,6 +28,16 @@ export class RouterUtils {
     }
   }
 
+  /**
+   * Checks if the requested OpenStack service needs to fetch information from another service and composes the new request body
+   * 
+   * @static
+   * @param {any} req 
+   * @param {any} res 
+   * @param {any} next 
+   * 
+   * @memberOf RouterUtils
+   */
   static getInfoFromServices(req, res, next) {
     if (req.method === 'POST') {
       if ((req.path in SubscriberClient.registeredMessages) && (SubscriberClient.registeredMessages[req.path].length > 0)) {

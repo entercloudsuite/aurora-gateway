@@ -6,6 +6,16 @@ import http = require('http');
 export class ServiceUtils {
   private static LOGGER: Logger = LoggerFactory.getLogger();
   
+  /**
+   * Creates a new request with the specified parameters, parses and returns the response
+   * 
+   * @static
+   * @param {Request} requestOptions 
+   * @param {*} [requestBody] 
+   * @returns 
+   * 
+   * @memberOf ServiceUtils
+   */
   static sendRequest(requestOptions: Request, requestBody?: any) {
     if (requestBody) {
       requestBody = JSON.stringify(requestBody);

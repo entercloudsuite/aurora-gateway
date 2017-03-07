@@ -12,7 +12,7 @@ export class RabbitClient {
   constructor(exchangeName: string) {
     this.exchangeName = exchangeName;
   }
-
+  
   connectClient(queueName: string, serviceId: string) {
     Topology.createTopology(this.rabbitConnection, serviceId)
       .then(() => {
@@ -26,6 +26,16 @@ export class RabbitClient {
       });
   }
 
+  /**
+   * Wrapper for publish method from rabbot module
+   * 
+   * @param {string} type 
+   * @param {string} routingKey 
+   * @param {*} message 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf RabbitClient
+   */
   publishMessage(type: string, routingKey: string, message: any): Promise<any> {
     RabbitClient.LOGGER.debug(`Publishing message - ${JSON.stringify(message)} on ${this.exchangeName}`);
     return this.rabbitConnection.publish(this.exchangeName, {
@@ -35,6 +45,14 @@ export class RabbitClient {
     });
   }
   
+  /**
+   * Implements a subscriber model for the AMQP transport layer
+   * 
+   * @param {any} message 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf RabbitClient
+   */
   notifyPublisher(message): Promise<any> {
     const messageParameter = {
       type: message.type,

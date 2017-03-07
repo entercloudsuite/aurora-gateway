@@ -1,3 +1,9 @@
+/**
+ * 
+ * 
+ * @export
+ * @interface Request
+ */
 export interface Request {
     protocol: string;
     host: string;

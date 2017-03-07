@@ -31,6 +31,14 @@ export class APIEvents {
     this.eventEmitter = new events.EventEmitter();
   }
 
+  /**
+   * Emits serviceCatalogUpdate message on a specific service
+   * 
+   * @param {string} serviceName 
+   * @param {{}} endpoint 
+   * 
+   * @memberOf APIEvents
+   */
   emitUpdateEvent(serviceName: string, endpoint: {}) {
     this.eventEmitter.emit(
       this.events.serviceCatalogUpdate[serviceName],

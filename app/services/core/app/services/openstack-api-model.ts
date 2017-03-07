@@ -3,6 +3,12 @@ import { ResourceNotFoundError, Logger, LoggerFactory, ServicePropreties } from 
 
 import url = require('url');
 
+/**
+ * Base class for Openstack Services abstraction
+ * 
+ * @export
+ * @class OpenstackAPIModel
+ */
 export class OpenstackAPIModel {
   public name: string;
   public type: string;
@@ -14,6 +20,15 @@ export class OpenstackAPIModel {
     this.endpoints = {};
   };
 
+  /**
+   * Parses and saves new endpoints on new service catalog requests
+   * 
+   * @static
+   * @param {ServicePropreties} newEndpoint 
+   * @param {OpenstackAPIModel} serviceInstance 
+   * 
+   * @memberOf OpenstackAPIModel
+   */
   static updateEndpoint(newEndpoint: ServicePropreties, serviceInstance: OpenstackAPIModel) {
     if (!(newEndpoint.id in serviceInstance.endpoints)) {
       // Remove tenant id from urls on nova and cinder
@@ -44,6 +59,14 @@ export class OpenstackAPIModel {
     }
   }
 
+  /**
+   * Fetchest the host, port, and API path for a given EndpointID
+   * 
+   * @param {string} requestEndpointId 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf OpenstackAPIModel
+   */
   checkEndpointId(requestEndpointId: string): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.endpoints[requestEndpointId]) {
@@ -59,6 +82,18 @@ export class OpenstackAPIModel {
     });
   }
   
+  /**
+   * Forwards calls to Openstack Services APIs based on the provided EndpointID 
+   * 
+   * @param {string} endpointId 
+   * @param {string} method 
+   * @param {string} path 
+   * @param {{}} headers 
+   * @param {{}} body 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf OpenstackAPIModel
+   */
   callServiceApi(endpointId: string, method: string, path: string, headers: {}, body: {}): Promise<any> {
     const requestOptions = {
       protocol: 'http:',

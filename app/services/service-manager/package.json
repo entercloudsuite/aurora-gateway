@@ -1,7 +1,7 @@
 {
   "name": "service-manager",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.0",
+  "description": "Registers new service and notifies the gateway",
   "author": "Bogdan Carpusor <bcarpusor@cloudbasesolutions.com>",
   "main": "app/app.ts",
   "license": "Apache",

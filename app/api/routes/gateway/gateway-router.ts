@@ -14,7 +14,18 @@ export class GatewayRouter extends RestRouter {
     this.initRoutes(gatewayService.serviceName);
   }
 
-  initRoutes(serviceName) {
+  /**
+   * Intializes all the routes on a specific path with a forwarding method.
+   * Adds separate method for authentication.
+   * 
+   * @todo Change method used check for authentication. Set CORE Service to provide more info on registering.
+   * @todo Add method for logout/destroy token
+   * @todo Add middleware for paths that require authentication
+   * @param {string} serviceName 
+   * 
+   * @memberOf GatewayRouter
+   */
+  initRoutes(serviceName: string) {
     if (serviceName === 'CORE') {
       GatewayRouter.LOGGER.debug('Authentication route attached');
       this.router.post('/identity/tokens', this.wrapRouteFn(this.gatewayController, this.gatewayController.authenticate));

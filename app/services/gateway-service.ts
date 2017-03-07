@@ -1,6 +1,7 @@
 import { Logger, LoggerFactory, InternalError, Request } from '../common';
-import http = require('http');
 import { ServiceUtils } from '../utils';
+import { APP_CONFIG } from '../config';
+import http = require('http');
 
 export class GatewayService {
   public serviceName: string;
@@ -11,6 +12,15 @@ export class GatewayService {
 
   private static LOGGER: Logger = LoggerFactory.getLogger();
 
+  /**
+   * Wrapper for the sendRequest method from ServiceUtils
+   * 
+   * @static
+   * @param {any} options 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf GatewayService
+   */
   static sendRequest(options): Promise<any> {
     const requestOptions = <Request> {
       protocol: 'http:' || options.protocol,
@@ -25,10 +35,17 @@ export class GatewayService {
     return ServiceUtils.sendRequest(requestOptions, options.body);
   };
 
+  /**
+   * Calls Service Manager for information regarding the location of the requested service.
+   * 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf GatewayService
+   */
   callServiceManager(): Promise<any> {
     return GatewayService.sendRequest({
-      host: process.env.REGISTRY_IP,
-      port: process.env.REGISTRY_PORT,
+      host: APP_CONFIG.serviceManagerHost,
+      port: APP_CONFIG.serviceManagerPort,
       path: '/service',
       headers: { 'Service-Name': this.serviceName }
     })
@@ -37,6 +54,17 @@ export class GatewayService {
       });
   }
   
+  /**
+   * 
+   * @todo Remove apiPath constructor
+   * @param {any} incomingRequest 
+   * @param {any} serviceHost 
+   * @param {any} servicePort 
+   * @param {any} apiPath 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf GatewayService
+   */
   callService(incomingRequest, serviceHost, servicePort, apiPath): Promise<any> {
     GatewayService.LOGGER.info(`Calling ${serviceHost}, on ${incomingRequest.path})}`);
     GatewayService.LOGGER.info(`Request headers - ${JSON.stringify(incomingRequest.headers)})}`);

@@ -1,7 +1,7 @@
 import winston = require('winston');
 import fs = require('fs');
-import { LoggerInstance } from 'winston';
 import morgan = require('morgan');
+import { LoggerInstance } from 'winston';
 import { StreamOptions } from 'morgan';
 
 export class LoggerFactory {

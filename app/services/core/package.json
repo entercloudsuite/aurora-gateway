@@ -1,7 +1,7 @@
 {
-  "name": "core-service",
-  "version": "0.0.1",
-  "description": "",
+  "name": "aurora-core",
+  "version": "1.0.0",
+  "description": "Provides abstraction in order to interract with OpenStack services APIs",
   "author": "Bogdan Carpusor <bcarpusor@cloudbasesolutions.com>",
   "main": "app/app.ts",
   "license": "Apache",

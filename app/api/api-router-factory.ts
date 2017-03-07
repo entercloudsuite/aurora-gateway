@@ -10,6 +10,15 @@ export class ApiRouterFactory {
 
   private constructor() {}
 
+  /**
+   * Returns default router middleware for the gateway.
+   * By default the gateway does not expose any specific route.
+   * 
+   * @static
+   * @returns {Router} 
+   * 
+   * @memberOf ApiRouterFactory
+   */
   static getApiRouter(): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
 
@@ -24,6 +33,16 @@ export class ApiRouterFactory {
     return apiRouter;
   }
   
+  /**
+   * Creates a new router for a route specified by the Service Manager.
+   * 
+   * @static
+   * @param {string} newAPIPath 
+   * @param {string} serviceName 
+   * @returns {Router} 
+   * 
+   * @memberOf ApiRouterFactory
+   */
   static registerNewAPI(newAPIPath: string, serviceName: string): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
     

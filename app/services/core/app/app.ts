@@ -17,7 +17,10 @@ const errorMiddleware = [
   RestErrorMiddleware.serializeRestError
 ];
 
-// Register the service and pass the service ID to further calls 
+/**
+ *  Register the service and pass the service ID to further calls 
+ *  @todo Send a "READY" state when the service finishes to initialize
+ */
 ServiceUtils.registerService()
   .then(serviceId => {
     LOGGER.info(`Service ID returned by the Service Manager - ${serviceId}`);

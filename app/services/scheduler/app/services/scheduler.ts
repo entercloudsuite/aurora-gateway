@@ -16,7 +16,7 @@ export class Scheduler {
       Topology.EXCHANGES.servicesExchange,
       Topology.QUEUES.servicesRequests);
   }
-
+  
   registerMessageHandlers() {
     Scheduler.manageRabbitMessage.bind(this);
     this.rabbitClient.rabbitConnection.handle(
@@ -29,6 +29,15 @@ export class Scheduler {
     this.scheduleJob(message.body);
   }
 
+  /**
+   * Method called when a job trigger is activated
+   * Uses the binded Scheduler object in order to retrieve the job info from the database and sends a new message through RabbitMQ
+   * 
+   * @static
+   * @param {number} jobId 
+   * 
+   * @memberOf Scheduler
+   */
   static runJob(jobId: number) {
     this.job.dbObject.findOne({ where: {id: jobId}})
       .then(job => {
@@ -36,13 +45,21 @@ export class Scheduler {
       });
   }
 
+  /**
+   * Creates, persists and schedules a new job
+   * 
+   * @todo Check node-scheduler package for error management
+   * @param {*} jobInfo 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf Scheduler
+   */
   scheduleJob(jobInfo: any): Promise<any> {
     return this.parseJobRequest(jobInfo)
       .then(jobInfo => {
         return this.job.createJob(jobInfo);
       })
       .then(persistedJob => {
-        // TODO: Check node-scheduler package for error management
         this.jobs[persistedJob.id] = scheduler.scheduleJob(
           persistedJob.trigger,
           Scheduler.runJob.bind(this, persistedJob.jobId)
@@ -74,6 +91,14 @@ export class Scheduler {
     return this.job.dbObject.findAll();
   }
 
+  /**
+   * Checks if the job trigger is a valid cron string or a valid date
+   * 
+   * @param {*} jobInfo 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf Scheduler
+   */
   parseJobRequest(jobInfo: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {

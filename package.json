@@ -1,7 +1,7 @@
 {
   "name": "aurora-backend",
   "version": "1.0.0",
-  "description": "Manager service for plugins registered to Aurora",
+  "description": "Gateway service used in front of aurora-core",
   "author": "Bogdan Carpusor <bcarpusor@cloudbasesolutions.com>",
   "main": "src/app/app.ts",
   "license": "Apache",

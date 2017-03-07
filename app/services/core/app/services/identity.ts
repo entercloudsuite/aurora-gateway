@@ -25,6 +25,15 @@ export class IdentityService extends OpenstackAPIModel {
     EventEmitter.eventEmitter.on(EventEmitter.events.serviceCatalogUpdate.keystone, IdentityService.updateEndpoint);
   }
 
+  /**
+   * Abstracts the logic needed to get a new token, the list of tenants and a service catalog
+   * 
+   * @todo Add logic for V3 API
+   * @param {{}} credentials 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf IdentityService
+   */
   authenticate(credentials: {}): Promise<any> {
     let result = {};
     let parsedCredentials = {};
@@ -64,22 +73,27 @@ export class IdentityService extends OpenstackAPIModel {
       });
   }
 
-  destroySession(currentSession: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      currentSession.destroy((error) => {
-        if (error) {
-          return reject(new InternalError(error));
-        } else {
-          return resolve({
-            'status': 'Successfully logged out'
-          });
-        }
-      });
-    });
-  }
+  /**
+   * Destroy a token provided by Keystone
+   * 
+   * @param {string} token 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf IdentityService
+   */
+  //destroySession(token: string): Promise<any> {
+  //  
+  //}
 
+  /**
+   * 
+   * @todo Abstract endpoint for different API versions
+   * @param {{}} credentials 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf IdentityService
+   */
   getToken(credentials: {}): Promise<any> {
-    // TODO: Abstract endpoint for different API versions
     OpenstackAPIModel.LOGGER.debug(`Requesting token from Keystone on - ${JSON.stringify(credentials)}`);
     return OpenstackService.callOSApi( {
       path: this.apiPath + '/tokens',
@@ -89,6 +103,14 @@ export class IdentityService extends OpenstackAPIModel {
     }, credentials);
   }
 
+  /**
+   * Request a new service catalaog from Keystone and notify other services on the response
+   * 
+   * @param {{}} [authObj] 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf IdentityService
+   */
   getServiceCatalog(authObj?: {}): Promise<any> {
     if (authObj) {
       if (this.apiVersion === '2.0') {
@@ -111,6 +133,14 @@ export class IdentityService extends OpenstackAPIModel {
     }
   }
 
+  /**
+   * 
+   * 
+   * @param {string} apiToken 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf IdentityService
+   */
   listTenants(apiToken: string): Promise<any> {
     OpenstackAPIModel.LOGGER.debug(`Getting tenant list for ${apiToken}`);
     return OpenstackService.callOSApi({
@@ -121,6 +151,13 @@ export class IdentityService extends OpenstackAPIModel {
     });
   }
 
+  /**
+   * 
+   * 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf IdentityService
+   */
   listExtensions(): Promise<any> {
     OpenstackAPIModel.LOGGER.debug('Listing extensions');
     return OpenstackService.callOSApi({
@@ -130,6 +167,13 @@ export class IdentityService extends OpenstackAPIModel {
     });
   }
 
+  /**
+   * 
+   * 
+   * @returns {Promise<any>} 
+   * 
+   * @memberOf IdentityService
+   */
   listVersions(): Promise<any> {
     OpenstackAPIModel.LOGGER.debug('Listing OpenStack API versions');
     return OpenstackService.callOSApi({

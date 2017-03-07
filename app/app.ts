@@ -1,9 +1,9 @@
+import { APP_CONFIG } from './config';
 import { Logger, LoggerFactory, RabbitClient } from './common';
 import { Express, Router } from 'express';
 import { ExpressAppFactory } from './express-app-factory';
 import { ApiRouterFactory } from './api';
 import { RestErrorMiddleware } from './common';
-import { APP_CONFIG } from './config';
 import util = require('util');
 
 const LOGGER: Logger = LoggerFactory.getLogger();

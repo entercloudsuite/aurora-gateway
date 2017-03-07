@@ -26,7 +26,7 @@ export class AppConfig {
     this.logLevel = this.getStringEnvVar('LOG_LEVEL');
     this.serveStatic = this.getBooleanEnvVar('SERVE_STATIC');
     this.sessionSecret = this.getStringEnvVar('SESSION_SECRET');
-    this.serviceManagerHost = this.getStringEnvVar('SERVICE_MANAGER_IP');
+    this.serviceManagerHost = this.getStringEnvVar('SERVICE_MANAGER_HOST');
     this.serviceManagerPort = this.getIntegerEnvVar('SERVICE_MANAGER_PORT');
     this.topologyFile = this.getStringEnvVar('TOPOLOGY_FILE_PATH');
     this.rabbitUser = this.getStringEnvVar('RABBIT_USER');

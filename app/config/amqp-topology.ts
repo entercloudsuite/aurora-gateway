@@ -25,7 +25,6 @@ export class AMQPTopology {
   public static LOGGER: Logger = LoggerFactory.getLogger();
 
   constructor() {
-
     const config = JSON.parse(fs.readFileSync(APP_CONFIG.topologyFile, 'utf-8'));
     this.connection = {
       user: APP_CONFIG.rabbitUser,
@@ -76,5 +75,4 @@ export class AMQPTopology {
   }
 }
 
-// Wait 2 seconds for the APP_CONFIG object to instantiate
 export let Topology = new AMQPTopology();

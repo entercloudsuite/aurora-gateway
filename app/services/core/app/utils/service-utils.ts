@@ -8,6 +8,14 @@ import { APP_CONFIG } from '../config';
 export class ServiceUtils {
   private static LOGGER: Logger = LoggerFactory.getLogger();
   
+  /**
+   * Sends a request to the Service Manager in order to register the new service
+   * 
+   * @static
+   * @returns 
+   * 
+   * @memberOf ServiceUtils
+   */
   static registerService() {
     const serviceOptions = {
       name: APP_CONFIG.name,
@@ -31,6 +39,16 @@ export class ServiceUtils {
     });
   }
   
+  /**
+   * Creates a new request with the specified parameters, parses and returns the response
+   * 
+   * @static
+   * @param {http.RequestOptions} requestOptions 
+   * @param {*} [requestBody] 
+   * @returns 
+   * 
+   * @memberOf ServiceUtils
+   */
   static sendRequest(requestOptions: http.RequestOptions, requestBody?: any) {
     if (requestBody) {
       requestBody = JSON.stringify(requestBody);

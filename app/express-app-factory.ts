@@ -46,6 +46,7 @@ export class ExpressAppFactory {
         ttl: 3600000
       });
     }
+    
     app.use(expressSession(sessionOptions));
 
     app.use(cors({
@@ -73,7 +74,9 @@ export class ExpressAppFactory {
 
     app.use('/api', apiRouter);
 
-    
+    /**
+     * Logic used to register and dynamically add a new route for a service
+     */
     app.post('/register', (req, res, next) => {
       ExpressAppFactory.LOGGER.debug(`Mounting new route - ${JSON.stringify(req.body)}`);
       const newRouter = ApiRouterFactory.registerNewAPI(req.body.routingPath, req.body.name);

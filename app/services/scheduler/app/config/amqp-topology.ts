@@ -16,7 +16,9 @@ export class AMQPTopology {
     servicesRequests: '',
     servicesMessages: '',
   };
-  public MESSAGES = {};
+  public MESSAGES = {
+    scheduleJob: ''
+  };
 
   public static LOGGER: Logger = LoggerFactory.getLogger();
 

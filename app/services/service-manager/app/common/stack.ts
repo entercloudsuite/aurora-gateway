@@ -1,3 +1,9 @@
+/**
+ * Custom stack class used to save available services
+ * 
+ * @export
+ * @class Stack
+ */
 export class Stack {
   public items: string[];
 
