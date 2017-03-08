@@ -14,18 +14,20 @@ export class ApiRouterFactory {
 
   static getApiRouter(serviceID: string): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
-    
-    SubscriberClient.connectClient(Topology.QUEUES.servicesRequests, serviceID);
+    const queueName = APP_CONFIG.name + serviceID;
+    SubscriberClient.connectClient(queueName);
+    SubscriberClient.registeredMessages = {};
     SubscriberClient.rabbitConnection.handle(Topology.MESSAGES.registerPublisher, message => {
+      ApiRouterFactory.LOGGER.debug(`Registering message request - ${JSON.stringify(message.body)}`);
       const newMessage = {
-        type: message.body.type,
-        routingKey: message.routingKey || '',
-        accessKey: message.accessKey
+        type: message.body.messageName,
+        routingKey: message.body.routingKey || '',
+        accessKey: message.body.accessKey
       };
-      if (typeof SubscriberClient[message.body.path] === undefined) {
-        SubscriberClient[message.body.path] = [newMessage];
+      if (SubscriberClient.hasOwnProperty(message.body.path)) {
+        SubscriberClient.registeredMessages[message.body.requestPath].append(newMessage);
       } else {
-        SubscriberClient[message.body.path].append(newMessage);
+        SubscriberClient.registeredMessages[message.body.requestPath] = [newMessage];
       }
     });
 

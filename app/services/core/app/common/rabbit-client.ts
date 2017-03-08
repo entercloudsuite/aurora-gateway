@@ -12,9 +12,9 @@ export class RabbitClient {
   constructor(exchangeName: string) {
     this.exchangeName = exchangeName;
   }
-  
-  connectClient(queueName: string, serviceId: string) {
-    Topology.createTopology(this.rabbitConnection, serviceId)
+
+  connectClient(queueName: string) {
+    Topology.createTopology(this.rabbitConnection, queueName)
       .then(() => {
         RabbitClient.LOGGER.info('Successfully initialized RabbitMQ connection');
         this.rabbitConnection.startSubscription(queueName);
@@ -58,7 +58,7 @@ export class RabbitClient {
       type: message.type,
       expiresAfter: 1000,
       routingKey: message.routingKey || '',
-      body: message.body
+      body: message.body || {}
     };
 
     return this.rabbitConnection.request(this.exchangeName, messageParameter)
@@ -67,7 +67,7 @@ export class RabbitClient {
         RabbitClient.LOGGER.debug(`Publisher replied with ${JSON.stringify(response.body)}`);
         return Promise.resolve({
           body: response.body,
-          keys: message.accessKey
+          accessKey: message.accessKey
         });
       });
   }

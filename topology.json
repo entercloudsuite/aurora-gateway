@@ -6,7 +6,11 @@
     },
     "servicesExchange": {
       "name": "AURORA_SERVICES_EXCHANGE",
-      "type": "topic"
+      "type": "direct"
+    },
+    "servicesNotificationsExchange": {
+      "name": "AURORA_SERVICES_NOTIFICATIONS",
+      "type": "fanout"
     }
   },
   "queues": {
@@ -16,8 +20,8 @@
   },
   "bindings": {
     "AURORA_GENERAL": ["AURORA_GENERAL_EXCHANGE", []],
-    "AURORA_SERVICES_REQUESTS": ["AURORA_SERVICES_EXCHANGE", ["NOTIFICATION*"]],
-    "AURORA_SERVICES_MESSAGES": [ "AURORA_SERVICES_EXCHANGE", []]
+    "AURORA_SERVICES_REQUESTS": ["AURORA_SERVICES_EXCHANGE", ["REQUEST"]],
+    "AURORA_SERVICES_MESSAGES": [ "AURORA_SERVICES_EXCHANGE", ["MESSAGE"]]
   },
   "messages": {
     "newService": "NEW_SERVICE",

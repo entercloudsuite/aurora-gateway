@@ -18,6 +18,9 @@ export class NovaService extends OpenstackAPIModel {
     EventEmitter.eventEmitter.on(EventEmitter.events.serviceCatalogUpdate.nova, NovaService.updateEndpoint);
   }
   
+  createVM(vmInfo: any): Promise<any> {
+    return Promise.resolve(vmInfo);
+  } 
   /**
    * Wrapper for the forwarding method from OpenstackAPIModel
    * 

@@ -40,8 +40,8 @@ export class RouterUtils {
    */
   static getInfoFromServices(req, res, next) {
     if (req.method === 'POST') {
-      if ((req.path in SubscriberClient.registeredMessages) && (SubscriberClient.registeredMessages[req.path].length > 0)) {
-        Promise.all(SubscriberClient.registeredMessages[req.path].map(SubscriberClient.notifyPublisher.bind(SubscriberClient)))
+      if ((SubscriberClient.registeredMessages.hasOwnProperty(req.originalUrl)) && (SubscriberClient.registeredMessages[req.originalUrl].length > 0)) {
+        Promise.all(SubscriberClient.registeredMessages[req.originalUrl].map(SubscriberClient.notifyPublisher.bind(SubscriberClient)))
           .then(results => {
             return Promise.resolve(results.forEach(result => {
               req.body[result['accessKey']] = result['body'];

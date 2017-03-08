@@ -13,6 +13,7 @@ export class NovaRouter extends RestRouter {
   }
 
   initRoutes() {
+    this.router.post('/vm', RouterUtils.getInfoFromServices, this.wrapRouteFn(this.novaController, this.novaController.createVM));
     this.router.all(
       '/*', RouterUtils.checkEndpointID, RouterUtils.checkTenantID,
       this.wrapRouteFn(this.novaController, this.novaController.proxyRequest)

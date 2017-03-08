@@ -9,7 +9,8 @@ export class AMQPTopology {
 
   public EXCHANGES = {
     servicesExchange: '',
-    generalExchange: ''
+    generalExchange: '',
+    servicesNotificationsExchange: ''
   };
   public QUEUES = {
     general: '',

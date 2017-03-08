@@ -1,5 +1,6 @@
 import fs = require('fs');
 import { Logger, LoggerFactory } from '../common';
+import { APP_CONFIG } from '../config';
 
 export class AMQPTopology {
   private connection: {};
@@ -9,7 +10,8 @@ export class AMQPTopology {
 
   public EXCHANGES = {
     servicesExchange: '',
-    generalExchange: ''
+    generalExchange: '',
+    servicesNotificationsExchange: ''
   };
   public QUEUES = {
     general: '',
@@ -64,18 +66,18 @@ export class AMQPTopology {
     this.MESSAGES = config.messages;
   }
 
-  createTopology(rabbit, serviceId: string): any {
-    
+  createTopology(rabbit, queueName: string): any {
     this.queues.push({
-      name: serviceId,
+      name: queueName,
       autoDelete: true
     });
+
     this.bindings.push({
-      exchange: this.EXCHANGES.servicesExchange,
-      target: serviceId,
-      keys: ['NOTIFICATION']
+      exchange: this.EXCHANGES.servicesNotificationsExchange,
+      target: queueName,
+      keys: []
     });
-    this.QUEUES.notifications = serviceId;
+    this.QUEUES.notifications = queueName;
 
 
     return rabbit.configure({

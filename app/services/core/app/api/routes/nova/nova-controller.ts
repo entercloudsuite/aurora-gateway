@@ -17,4 +17,11 @@ export class NovaController extends RestController {
         this.forwardResponse(res, result.body, result.statusCode);
       });
   }
+
+  createVM(req, res): Promise<any> {
+    return this.novaService.createVM(req.body)
+      .then(result => {
+        this.respond(res, result);
+      });
+  }
 }

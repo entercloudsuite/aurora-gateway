@@ -9,8 +9,7 @@ export class ServiceUtils {
         const serviceOptions = {
       name: process.env.SERVICE_NAME,
       port: process.env.PORT,
-      routingPath: process.env.GATEWAY_ROUTING_PATH,
-      apiPath: process.env.SERVICE_API_PATH,
+      routingPath: process.env.GATEWAY_ROUTING_PATH
     };
     
     ServiceUtils.LOGGER.info(`Registering new service with ${JSON.stringify(serviceOptions)}`);

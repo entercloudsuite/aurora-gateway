@@ -21,7 +21,7 @@ ServiceUtils.registerService()
     LOGGER.error(`Unable to register service ${error}`);
   });
 const messageHandler = new RabbitClient(
-  Topology.EXCHANGES.servicesExchange,
+  Topology.EXCHANGES.servicesNotificationsExchange,
   Topology.QUEUES.servicesRequests
 );
 
@@ -29,14 +29,16 @@ const messageHandler = new RabbitClient(
 // Notify a specific service about the message that should be requested
 messageHandler.publishMessage(
   Topology.MESSAGES.registerPublisher,
-  'NOTIFICATION_METADATA',
+  '',
   {
-    requestPath: 'api/nova/vms',
-    messageName: Topology.MESSAGES.metadataRequest
+    requestPath: '/api/nova/vm',
+    messageName: Topology.MESSAGES.metadataRequest,
+    accessKey: 'metadata',
+    routingKey: 'REQUEST'
   }
 );
 
-// Reply to incoming subscriber request
+// Reply to incoming subscriber request 
 messageHandler.rabbitConnection.handle(Topology.MESSAGES.metadataRequest, message => {
   LOGGER.info('Received subscriber request');
   message.body['tags'] = ['tag1', 'tag2'];
