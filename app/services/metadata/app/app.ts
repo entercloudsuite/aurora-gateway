@@ -40,9 +40,8 @@ messageHandler.publishMessage(
 
 // Reply to incoming subscriber request 
 messageHandler.rabbitConnection.handle(Topology.MESSAGES.metadataRequest, message => {
-  LOGGER.info('Received subscriber request');
-  message.body['tags'] = ['tag1', 'tag2'];
-  message.reply(message.body, Topology.MESSAGES.metadataResponse);
+  LOGGER.info(`Received subscriber request with ${JSON.stringify(message.body)}`);
+  message.reply({'tags': ['tag1', 'tag2']}, Topology.MESSAGES.metadataResponse);
 });
 
 app.listen(parseInt(process.env.PORT), () => {
