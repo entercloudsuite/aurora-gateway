@@ -1,0 +1,13 @@
+pipeline:
+  build:
+    image: node:6.9
+    commands:
+        - npm install
+        - npm run --silent build || true
+        - npm run test
+
+services:
+  redis:
+    image: redis:alpine
+  rabbit:
+    image: rabbitmq:alpine
