@@ -6,6 +6,12 @@ pipeline:
         - npm run --silent build || true
         - npm run test
 
+  publish:
+    image: plugins/docker
+    repo: ecsdevops/aurora-gateway
+    username: ecsdevops
+    password: ${DOCKER_PASSWORD}
+
 services:
   redis:
     image: redis:alpine
