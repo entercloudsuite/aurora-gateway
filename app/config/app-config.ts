@@ -35,7 +35,7 @@ export class AppConfig {
     this.rabbitHost = this.getStringEnvVar('RABBIT_HOST');
     // optional environment variables
     this.redisPort = this.getIntegerEnvVar('REDIS_PORT', 6379);
-    this.redisHost = this.getStringEnvVar('REDIS_PORT', '127.0.0.1');
+    this.redisHost = this.getStringEnvVar('REDIS_HOST', '127.0.0.1');
     this.enableHttpRequestLogging = this.getBooleanEnvVar('ENABLE_HTTP_REQUEST_LOGGING', false);
 
     AppConfig.LOGGER.debug(`App config - ${JSON.stringify(this.toJSON())}`);

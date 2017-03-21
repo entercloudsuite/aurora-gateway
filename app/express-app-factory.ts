@@ -29,7 +29,7 @@ export class ExpressAppFactory {
 
     let redisStore = connectRedis(expressSession);
     let sessionOptions = {
-      secret: process.env.SESSION_SECRET,
+      secret: APP_CONFIG.sessionSecret,
       saveUninitialized: true,
       resave: true,
       cookie: {
@@ -37,15 +37,6 @@ export class ExpressAppFactory {
         httpOnly: false
       }
     };
-    
-    if (APP_CONFIG.getEnvironment() !== 'dev') {
-      sessionOptions['store'] = new redisStore({
-        host: APP_CONFIG.redisHost,
-        port: APP_CONFIG.redisPort,
-        client: RedisClient,
-        ttl: 3600000
-      });
-    }
 
     app.use(expressSession(sessionOptions));
 
