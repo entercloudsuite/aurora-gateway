@@ -1,6 +1,6 @@
 import express = require('express');
 import { Router } from 'express';
-import { Logger, LoggerFactory, InvalidResourceUrlError } from '../common';
+import { Logger, LoggerFactory, InvalidResourceUrlError, Service } from '../common';
 import { GatewayRouter } from './routes';
 import { GatewayService } from '../services';
 
@@ -42,7 +42,7 @@ export class ApiRouterFactory {
    * 
    * @memberOf ApiRouterFactory
    */
-  static registerNewAPI(newService: {}): Router {
+  static registerNewAPI(newService: Service): Router {
     const apiRouter: Router = express.Router({ mergeParams: true });
     
     ApiRouterFactory.LOGGER.info(`Registering new route with ${JSON.stringify(newService)}`);

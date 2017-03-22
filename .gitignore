@@ -1,3 +1,6 @@
+# WebStorm config
+.idea
+
 # Project specific paths
 dev.env
 build

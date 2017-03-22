@@ -13,3 +13,12 @@ export interface Request {
     headers: {};
     body?: {};
 }
+
+/**
+ * 
+ */
+export interface Service {
+    name: string;
+    routingPath: string;
+    options: {};
+}

@@ -1,4 +1,4 @@
-import { Logger, LoggerFactory, InternalError, Request } from '../common';
+import { Logger, LoggerFactory, InternalError, Request, Service } from '../common';
 import { ServiceUtils } from '../utils';
 import { APP_CONFIG } from '../config';
 import http = require('http');
@@ -8,7 +8,7 @@ export class GatewayService {
   public routingPath: string;
   public options: {};
 
-  constructor(newService: {}) {
+  constructor(newService: Service) {
     this.name = newService.name;
     this.routingPath = newService.routingPath;
     this.options = newService.options || {};
