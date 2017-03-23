@@ -1,6 +1,6 @@
 /**
- * 
- * 
+ *
+ *
  * @export
  * @interface Request
  */
@@ -15,10 +15,11 @@ export interface Request {
 }
 
 /**
- * 
+ *
  */
 export interface Service {
     name: string;
     routingPath: string;
-    options: {};
+    options?: {};
+    methods?: {}
 }

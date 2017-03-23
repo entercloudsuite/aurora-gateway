@@ -10,6 +10,8 @@ import cors = require('cors');
 import connectRedis = require('connect-redis');
 import { RabbitClient } from './common';
 import { ApiRouterFactory } from './api';
+import { RouterUtils } from './utils';
+import fs = require('fs');
 
 export class ExpressAppFactory {
 
@@ -37,7 +39,7 @@ export class ExpressAppFactory {
         httpOnly: false
       }
     };
-    
+
     if (APP_CONFIG.getEnvironment() !== 'dev') {
       sessionOptions['store'] = new redisStore({
         host: APP_CONFIG.redisHost,
@@ -53,7 +55,7 @@ export class ExpressAppFactory {
       origin: true,
       credentials: true
     }));
-    
+
     if (APP_CONFIG.serveStatic) {
       ExpressAppFactory.LOGGER.info(`Serving static files from public`);
       app.use(express.static('public'));
@@ -74,17 +76,21 @@ export class ExpressAppFactory {
 
     app.use('/api', apiRouter);
 
-    /**
-     * Logic used to register and dynamically add a new route for a service
-     */
-    app.post('/register', (req, res, next) => {
-      ExpressAppFactory.LOGGER.debug(`Mounting new route - ${JSON.stringify(req.body)}`);
-      const newRouter = ApiRouterFactory.registerNewAPI(req.body);
-      app.use(req.body.routingPath, newRouter);
-    
-      res.json({'info': 'successfully registered new route'});
-    });
-    
+    if (fs.existsSync('./routes.yml')) {
+      RouterUtils.parseRouteConfigFile()
+        .then(routingList => routingList.map(route => {
+          ExpressAppFactory.LOGGER.debug(JSON.stringify(route));
+          app.use(route.routingPath, ApiRouterFactory.registerNewAPI(route));
+        }))
+        .catch(error => {
+          ExpressAppFactory.LOGGER.warn(error);
+        });
+    } else {
+      ExpressAppFactory.LOGGER.debug('Creating empty routes file')
+      fs.closeSync(fs.openSync('./routes.yml', 'w'));
+    }
+
+
     if (postApiRouterMiddlewareFns != null) {
       postApiRouterMiddlewareFns.forEach((middlewareFn) => app.use(middlewareFn));
     }

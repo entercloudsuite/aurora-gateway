@@ -6,6 +6,8 @@ import { ApiRouterFactory } from './api';
 import { RestErrorMiddleware } from './common';
 import { RouterUtils } from './utils';
 import util = require('util');
+import yaml = require('js-yaml');
+import fs = require('fs');
 
 const LOGGER: Logger = LoggerFactory.getLogger();
 const apiRouter: Router = ApiRouterFactory.getApiRouter();
@@ -31,6 +33,7 @@ rabbitClient.rabbitConnection.handle('NEW_SERVICE', message => {
       RouterUtils.evaluateNewServiceMessage(message.body, app._router.stack.filter(r => r.route).map(r => r.route.path))
         .then(result => {
           app.use(result.routingPath, ApiRouterFactory.registerNewAPI(result));
+          RouterUtils.updateRoutesFile(result);
         })
         .catch(error => {
           LOGGER.error('Unable to mount new service service');
