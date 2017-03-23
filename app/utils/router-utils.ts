@@ -70,7 +70,7 @@ export class RouterUtils {
         return RouterUtils.writeYMLFile(result, './routes.yml');
       })
       .then(result => {
-        RouterUtils.LOGGER.debug(result);
+        RouterUtils.LOGGER.debug(`Updated routes config file`);
       })
       .catch(error => {
         RouterUtils.LOGGER.error(`Error while updating routes file ${JSON.stringify(error)}`);

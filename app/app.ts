@@ -29,6 +29,7 @@ const rabbitClient = new RabbitClient('AURORA_GENERAL_EXCHANGE', 'AURORA_GENERAL
  */
 rabbitClient.rabbitConnection.handle('NEW_SERVICE', message => {
   try {
+      message.ack();
       LOGGER.info(`Received new service message - ${JSON.stringify(message.body)}`);
       RouterUtils.evaluateNewServiceMessage(message.body, app._router.stack.filter(r => r.route).map(r => r.route.path))
         .then(result => {
