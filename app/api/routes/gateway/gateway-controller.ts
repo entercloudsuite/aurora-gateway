@@ -25,7 +25,7 @@ export class GatewayController extends RestController {
           req.headers['X-Auth-Token'] = req.session.token;
         }
         // const serviceObject = JSON.parse(serviceManagerResponse.body);
-        return this.gatewayService.callService(req, serviceManagerResponse.data.host, serviceManagerResponse.data.port, serviceManagerResponse.data.apiPath);
+        return this.gatewayService.callService(req, serviceManagerResponse.data.host, serviceManagerResponse.data.port, serviceManagerResponse.data.options.apiPath);
       })
       .then((serviceResponse) => {
         return this.forwardResponse(res, serviceResponse.body, serviceResponse.statusCode);
@@ -51,7 +51,7 @@ export class GatewayController extends RestController {
           req, 
           serviceManagerResponse.data.host, 
           serviceManagerResponse.data.port, 
-          serviceManagerResponse.data.apiPath);
+          serviceManagerResponse.data.options.apiPath);
       })
       .then((serviceResponse) => {
         req.session.token = JSON.parse(serviceResponse.body).access.token.id;
