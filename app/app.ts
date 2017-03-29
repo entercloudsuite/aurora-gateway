@@ -4,7 +4,10 @@ import { Express, Router } from 'express';
 import { ExpressAppFactory } from './express-app-factory';
 import { ApiRouterFactory } from './api';
 import { RestErrorMiddleware } from './common';
+import { RouterUtils } from './utils';
 import util = require('util');
+import yaml = require('js-yaml');
+import fs = require('fs');
 
 const LOGGER: Logger = LoggerFactory.getLogger();
 const apiRouter: Router = ApiRouterFactory.getApiRouter();
@@ -16,29 +19,36 @@ const errorMiddleware = [
 ];
 
 const app: Express = ExpressAppFactory.getExpressApp(apiRouter, null, errorMiddleware);
-//
-// app.on('NEW_SERVICE', message => {
-//   ExpressAppFactory.LOGGER.debug(`Added new route for service - ${JSON.stringify(message.body)}`);
-//   const newRouter = ApiRouterFactory.registerNewAPI(message.body.path, message.body.name);
-//   app.use('/api' + message.body.routingPath, newRouter);
-//   app.get('/banana', (req, res) => {
-//     res.json('it works');
-//   });
-//   ExpressAppFactory.LOGGER.debug(`Added new route for service - ${JSON.stringify(message.body)}`);
-// });
-//
-// const rabbitClient = new RabbitClient('aurora-general');
-// function emitEvent() {
-//   this.emit('NEW_SERVICE');
-// }
-//
-// emitEvent.bind(app);
-// rabbitClient.rabbitConnection.handle(
-//   rabbitClient.messageTypes.NEW_SERVICE,
-//   emitEvent
-// );
-////////////////////
 
+const rabbitClient = new RabbitClient('AURORA_GENERAL_EXCHANGE', 'AURORA_GENERAL');
+
+
+
+/**
+ * Registration handler for new services
+ */
+rabbitClient.rabbitConnection.handle('NEW_SERVICE', message => {
+  try {
+      message.ack();
+      LOGGER.info(`Received new service message - ${JSON.stringify(message.body)}`);
+      RouterUtils.evaluateNewServiceMessage(message.body, app._router.stack.filter(r => r.route).map(r => r.route.path))
+        .then(result => {
+          app.use(result.routingPath, ApiRouterFactory.registerNewAPI(result));
+          RouterUtils.updateRoutesFile(result);
+        })
+        .catch(error => {
+          LOGGER.error('Unable to mount new service service');
+          LOGGER.error(error)
+        });
+  } catch (err) {
+      LOGGER.debug(err);
+      message.nack();
+  }
+});
+
+rabbitClient.rabbitConnection.onUnhandled(message => {
+    LOGGER.debug(message);
+})
 app.listen(APP_CONFIG.port, () => {
   LOGGER.info(`Express server listening on port ${APP_CONFIG.port}.`);
 });

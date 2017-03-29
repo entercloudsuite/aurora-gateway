@@ -70,7 +70,15 @@ export class AMQPTopology {
       connection: this.connection,
       exchanges: this.exchanges,
       queues: this.queues,
-      bindings: this.bindings
+      bindings: this.bindings,
+      logging: {
+        addapters: {
+          stdOut: {
+            level: 3,
+            bailIfDebug: true
+          }
+        }
+      }
     });
   }
 }

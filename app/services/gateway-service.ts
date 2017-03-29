@@ -73,6 +73,12 @@ export class GatewayService {
     GatewayService.LOGGER.info(`Calling ${serviceHost}, on ${incomingRequest.path}`);
     GatewayService.LOGGER.info(`Request headers - ${JSON.stringify(incomingRequest.headers)})}`);
     GatewayService.LOGGER.info(`Request body - ${JSON.stringify(incomingRequest.body)})}`);
+
+    // A default access path can be set for a service (/api, /apiV2)
+    if (apiPath) {
+      incomingRequest.path = apiPath + incomingRequest.path;
+    }
+
     return GatewayService.sendRequest({
       host: serviceHost,
       port: servicePort,
