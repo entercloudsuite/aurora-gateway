@@ -11,6 +11,9 @@ pipeline:
     repo: ecsdevops/aurora-gateway
     username: ecsdevops
     password: ${DOCKER_PASSWORD}
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}
 
 services:
   redis:
